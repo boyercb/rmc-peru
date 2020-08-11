@@ -22,8 +22,7 @@ rmc_evaluation <- function(n_hosts = 150,
       N = n_couples
     ),
     individuals = add_level(
-      N = 2,
-      sex = c("F", "M"),
+      N = 1,
       u_el = draw_normal_icc(
         mean = 0,
         clusters = hosts,
