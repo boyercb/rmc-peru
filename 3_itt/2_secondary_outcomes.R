@@ -5,11 +5,18 @@ itt_secondary <-
     rep(secondary_outcomes, each = 2),
     rep(c(FALSE, TRUE), length(secondary_outcomes)),
     function(outcome, adjusted) {
-      strata_FE <- paste0("strata_new_", 2:7, "_c")
+      strata_FE <- c(
+        paste0("strata_new_", 2:4, "_c"),
+        paste0("batch_", 2:6, "_c")
+      )
+      
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      #r_covs <- r_selected$covariate[r_selected$outcome == outcome]
-      z_covs <- z_selected$covariate[z_selected$outcome == outcome]
-      covs <- unique(c(y_covs, z_covs, strata_FE))
+      r_covs <- r_selected$covariate
+      if (outcome == "arguments") {
+        r_covs <- NULL
+      }
+      z_covs <- z_selected$covariate
+      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
       
       lm_robust(
         reformulate(
@@ -32,7 +39,7 @@ names(itt_secondary) <-
     paste0("(", 1:4, ")"), 
     paste0("(", 1:4, ")"), 
     paste0("(", 1:4, ")"),
-    paste0("(", 1:2, ")"),
+    paste0("(", 1:4, ")"),
     paste0("(", 1:2, ")"))
 
 make_report_table(
@@ -40,6 +47,7 @@ make_report_table(
   outcomes = secondary_outcomes[1:2],
   outcome_labels = secondary_labels[1:2],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on self-reported relationship satisfaction among men and women \\label{tab:itt_satisfaction}",
   data = rmc
 ) |>
   save_kable(
@@ -50,6 +58,7 @@ make_report_table(
   models = itt_secondary[5:8],
   outcomes = secondary_outcomes[3:4],
   outcome_labels = secondary_labels[3:4],
+  title = "ITT estimates of effects of HEP on perception of partner's satisfaction with relationship among men and women \\label{tab:itt_perc_satisfaction}",
   treatment = "treatment",
   data = rmc
 ) |>
@@ -61,6 +70,7 @@ make_report_table(
   models = itt_secondary[9:12],
   outcomes = secondary_outcomes[5:6],
   outcome_labels = secondary_labels[5:6],
+  title = "ITT estimates of effects of HEP on conflict outcomes \\label{tab:itt_conflict}",
   treatment = "treatment",
   data = rmc
 ) |>
@@ -73,6 +83,7 @@ make_report_table(
   outcomes = secondary_outcomes[7:8],
   outcome_labels = secondary_labels[7:8],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on attitudes \\label{tab:itt_attitudes}",
   data = rmc
 ) |>
   save_kable(
@@ -80,10 +91,11 @@ make_report_table(
   )
 
 make_report_table(
-  models = itt_secondary[17:18],
-  outcomes = secondary_outcomes[9],
-  outcome_labels = secondary_labels[9],
+  models = itt_secondary[17:20],
+  outcomes = secondary_outcomes[9:10],
+  outcome_labels = secondary_labels[9:10],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on alcohol consumption and mental health \\label{tab:itt_depression}",
   data = rmc
 ) |>
   save_kable(
@@ -91,14 +103,15 @@ make_report_table(
   )
 
 make_report_table(
-  models = itt_secondary[19:20],
-  outcomes = secondary_outcomes[10],
-  outcome_labels = secondary_labels[10],
+  models = itt_secondary[21:22],
+  outcomes = secondary_outcomes[11],
+  outcome_labels = secondary_labels[11],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on control ladder \\label{tab:itt_ladder}",
   data = rmc
 ) |>
   save_kable(
-    file = "6_tables/itt_depression.tex"
+    file = "6_tables/itt_ladder.tex"
   )
 
 

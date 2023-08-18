@@ -23,5 +23,6 @@ imputed_df <-
     method = "cart"
   )
 
-rmc[rmc$id_status_w == 1, impute_vars] <- 
+rmc_imputed <- rmc
+rmc_imputed[rmc_imputed$id_status_w == 1, impute_vars] <- 
   complete(imputed_df)

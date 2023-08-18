@@ -10,7 +10,16 @@ violence_outcomes <- c(
   "sexual_score",
   "control_score",
   "psychological_score",
-  "cyber_score"
+  "cyber_score",
+  "any_severe",
+  "any_severe_physical",
+  "any_severe_sexual",
+  "ipv_z",
+  "physical_z",
+  "sexual_z",
+  "control_z",
+  "psychological_z",
+  "cyber_z"
 )
 
 violence_labels <- c(
@@ -25,7 +34,16 @@ violence_labels <- c(
   "Sexual Index",
   "Control Index",
   "Psych. Index",
-  "Cyber Index"
+  "Cyber Index",
+  "Any Severe",
+  "Any Phys Severe",
+  "Any Sex Severe",
+  "IPV Z-score",
+  "Physical Z-score",
+  "Sexual Z-score",
+  "Control Z-score",
+  "Psych. Z-score",
+  "Cyber Z-score"
 )
 
 time_to_violence_outcomes <- c(
@@ -50,7 +68,7 @@ primary_outcomes <- c(
 )
 
 primary_labels <- c(
-  "Control \\& DM Index",
+  "Control & DM Index",
   "Consent Index",
   "Comm. Index"
 )
@@ -74,8 +92,8 @@ secondary_labels <- c(
   "Satisfaction (W)",
   "Partner's Satisfaction (M)",
   "Partner's Satisfaction (W)",
-  "Broke up",
-  "Arguments",
+  "Broke up (W)",
+  "Arguments (M)",
   "VAW attitudes (M)",
   "Gender attitudes (W)",
   "Depression (M)",
@@ -114,3 +132,9 @@ outcome_labels <-
     #time_to_violence_labels,
     demand_labels
   )
+
+
+attrition_outcomes <- c(
+  "responded_m",
+  "responded_w"
+)

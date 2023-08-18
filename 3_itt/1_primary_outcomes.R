@@ -7,12 +7,14 @@ itt_violence <-
     rep(violence_outcomes, each = 2),
     rep(c(FALSE, TRUE), length(violence_outcomes)),
     function(outcome, adjusted) {
-      strata_FE <- paste0("strata_new_", 2:7, "_c")
+      strata_FE <- c(
+        paste0("strata_new_", 2:4, "_c"),
+        paste0("batch_", 2:6, "_c")
+      )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      #r_covs <- r_selected$covariate[r_selected$outcome == outcome]
-      z_covs <- z_selected$covariate[z_selected$outcome == outcome]
-      covs <- unique(c(y_covs, z_covs, strata_FE))
-      
+      r_covs <- r_selected$covariate
+      z_covs <- z_selected$covariate
+      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
       lm_robust(
         reformulate(
           termlabels = if (adjusted) {
@@ -23,6 +25,7 @@ itt_violence <-
           response = outcome,
         ),
         data = filter(rmc, id_status_w == 1)
+        #weights = response_weights[[outcome]]
       )      
     }
   )
@@ -32,11 +35,14 @@ itt_time_to_violence <-
     rep(time_to_violence_outcomes, each = 2),
     rep(c(FALSE, TRUE), length(time_to_violence_outcomes)),
     function(outcome, adjusted) {
-      strata_FE <- paste0("strata_new_", 2:7, "_c")
+      strata_FE <- c(
+        paste0("strata_new_", 2:4, "_c"),
+        paste0("batch_", 2:6, "_c")
+      )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      #r_covs <- r_selected$covariate[r_selected$outcome == outcome]
-      z_covs <- z_selected$covariate[z_selected$outcome == outcome]
-      covs <- unique(c(y_covs, z_covs, strata_FE))
+      r_covs <- r_selected$covariate
+      z_covs <- z_selected$covariate
+      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
       
       lm_robust(
         reformulate(
@@ -57,11 +63,14 @@ itt_primary <-
     rep(primary_outcomes, each = 2),
     rep(c(FALSE, TRUE), length(primary_outcomes)),
     function(outcome, adjusted) {
-      strata_FE <- paste0("strata_new_", 2:7, "_c")
+      strata_FE <- c(
+        paste0("strata_new_", 2:4, "_c"),
+        paste0("batch_", 2:6, "_c")
+      )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      #r_covs <- r_selected$covariate[r_selected$outcome == outcome]
-      z_covs <- z_selected$covariate[z_selected$outcome == outcome]
-      covs <- unique(c(y_covs, z_covs, strata_FE))
+      r_covs <- r_selected$covariate
+      z_covs <- z_selected$covariate
+      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
       
       lm_robust(
         reformulate(
@@ -84,6 +93,9 @@ names(itt_violence) <-
   c(paste0("(", 1:6, ")"), 
     paste0("(", 1:6, ")"), 
     paste0("(", 1:6, ")"),
+    paste0("(", 1:6, ")"),
+    paste0("(", 1:6, ")"),
+    paste0("(", 1:6, ")"),
     paste0("(", 1:6, ")"))
 
 make_report_table(
@@ -91,6 +103,7 @@ make_report_table(
   outcomes = violence_outcomes[1:3],
   outcome_labels = violence_labels[1:3],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on primary violence outcomes \\label{tab:itt_violence_bin_1}",
   data = rmc
 ) |>
   save_kable(
@@ -102,6 +115,7 @@ make_report_table(
   outcomes = violence_outcomes[4:6],
   outcome_labels = violence_labels[4:6],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on other violence outcomes \\label{tab:itt_violence_bin_2}",
   data = rmc
 ) |>
   save_kable(
@@ -113,6 +127,7 @@ make_report_table(
   outcomes = violence_outcomes[7:9],
   outcome_labels = violence_labels[7:9],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on continuous violence indices \\label{tab:itt_violence_cont_1}",
   data = rmc
 ) |>
   save_kable(
@@ -124,13 +139,48 @@ make_report_table(
   outcomes = violence_outcomes[10:12],
   outcome_labels = violence_labels[10:12],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on other continuous violence indices \\label{tab:itt_violence_cont_2}",
   data = rmc
 ) |>
   save_kable(
     file = "6_tables/itt_violence_cont_2.tex"
   )
 
+make_report_table(
+  models = itt_violence[25:30],
+  outcomes = violence_outcomes[13:15],
+  outcome_labels = violence_labels[13:15],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on any severe responses (> 2) \\label{tab:itt_violence_bin_severe}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_violence_bin_severe.tex"
+  )
 
+make_report_table(
+  models = itt_violence[31:36],
+  outcomes = violence_outcomes[16:18],
+  outcome_labels = violence_labels[16:18],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on continuous violence z-scores \\label{tab:itt_violence_z_1}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_violence_z_1.tex"
+  )
+
+make_report_table(
+  models = itt_violence[37:42],
+  outcomes = violence_outcomes[19:21],
+  outcome_labels = violence_labels[19:21],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on other continuous violence z-scores \\label{tab:itt_violence_z_2}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_violence_z_2.tex"
+  )
 
 
 names(itt_primary) <- paste0("(", 1:6, ")")
@@ -140,6 +190,7 @@ make_report_table(
   outcomes = primary_outcomes,
   outcome_labels = primary_labels,
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on other primary outcomes \\label{tab:itt_primary}",
   data = rmc
 ) |>
   save_kable(

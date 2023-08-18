@@ -1,4 +1,4 @@
-postlasso <- function(covariates, outcome, data, fixed_effects = NULL, func = identity) {
+postlasso <- function(covariates, outcome, data, fixed_effects = NULL, func = identity, logit = FALSE) {
   cc <- which(!is.na(func(data[[outcome]])))
   
   if (!is.null(fixed_effects)) {
@@ -8,7 +8,11 @@ postlasso <- function(covariates, outcome, data, fixed_effects = NULL, func = id
     fit <- rlasso(x = data[cc, covariates], y = y_res)
     
   } else {
-    fit <- rlasso(x = data[cc, covariates], y = func(data[[outcome]])[cc])
+    if (!logit) {
+      fit <- rlasso(x = data[cc, covariates], y = func(data[[outcome]])[cc])
+    } else {
+      fit <- rlassologit(x = data[cc, covariates], y = func(data[[outcome]])[cc])
+    }
     
   }
   

@@ -41,7 +41,11 @@ stopifnot(!anyDuplicated(blw$participant_id))
 batches <-
   map(1:6, function(i)
     read_stata(get_data(
-      paste0("_inputs/batch", i, "_randomization.dta")
+      if (i == 1) {
+        paste0("_inputs/batch", i, "_randomization_.dta")
+      } else {
+        paste0("_inputs/batch", i, "_randomization.dta")
+      }
     )))
 
 # combine into single dataset
@@ -70,8 +74,8 @@ rand <-
       )
     ),
     group = replace(group, is.na(group), 0),
-    strata = replace(strata, is.na(strata) & batch == 1, 4),
-    strata = replace(strata, is.na(strata), 5)
+    strata = replace(strata, strata == 4 & batch == 1, 3),
+    strata = replace(strata, is.na(strata), 4)
   ) |>
   select(participant_id, batch, group, strata, treatment)
 

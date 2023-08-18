@@ -42,6 +42,6 @@ __archive/
 
 6_tables/*.tex
 7_figures/*.pdf
-8_report/*
+8_report/*  
 
 .DS_Store

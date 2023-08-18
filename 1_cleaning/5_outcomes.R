@@ -38,40 +38,95 @@ rmc <-
       ipv13_w > 1 | ipv14_w > 1 | ipv15_w > 1 ~ 1,
       ipv13_w == 1 & ipv14_w == 1 & ipv15_w == 1 ~ 0,
       TRUE ~ NA_integer_
-    )
-    
+    ),
+    any_severe = case_when(
+      ipv7_w > 2 | ipv8_w > 2 | ipv9_w > 2 | ipv10_w > 2 | ipv11_w > 2 | ipv12_w > 2 ~ 1,
+      ipv7_w <= 2 & ipv8_w <= 2  & ipv9_w <= 2  & ipv10_w <= 2  & ipv11_w <= 2  & ipv12_w <= 2  ~ 0,
+      TRUE ~ NA_integer_
+    ),
+    any_severe_physical = case_when(
+      ipv7_w > 2 | ipv8_w > 2 | ipv9_w > 2 | ipv10_w > 2 ~ 1,
+      ipv7_w <= 2 & ipv8_w <= 2  & ipv9_w <= 2  & ipv10_w <= 2 ~ 0,
+      TRUE ~ NA_integer_
+    ),
+    any_severe_sexual = case_when(
+      ipv11_w > 2 | ipv12_w > 2 ~ 1,
+      ipv11_w <= 2  & ipv12_w <= 2 ~ 0,
+      TRUE ~ NA_integer_
+    ),
   )
 
+rmc$ipv_refusals <- 
+  rowSums(is.na(rmc[, paste0("ipv", 7:12, "_w")]))
+rmc$any_ipv_refusals <- as.numeric(rmc$ipv_refusals > 0)
+  
 rmc <- 
   rmc |>
   rowwise() |>
   mutate(
-    control_score = mean(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w), na.rm = TRUE),
+    control_sum = sum(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w)) - 4,
     control_nonmiss = sum(!is.na(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w))),
     
-    psychological_score = mean(c(ipv5_w, ipv6_w), na.rm = TRUE),
+    psychological_sum = sum(c(ipv5_w, ipv6_w)) - 2,
     psychological_nonmiss = sum(!is.na(c(ipv5_w, ipv6_w))),
 
-    ipv_score = mean(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w), na.rm = TRUE),
+    ipv_sum = sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w)) - 6,
     ipv_nonmiss = sum(!is.na(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w))),
     
-    physical_score = mean(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w), na.rm = TRUE),
+    physical_sum = sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w)) - 4,
     physical_nonmiss = sum(!is.na(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w))),
     
-    sexual_score = mean(c(ipv11_w, ipv12_w), na.rm = TRUE),
+    sexual_sum = sum(c(ipv11_w, ipv12_w)) - 2,
     sexual_nonmiss = sum(!is.na(c(ipv11_w, ipv12_w))),
     
-    cyber_score = mean(c(ipv13_w, ipv14_w, ipv15_w), na.rm = TRUE),
+    cyber_sum = sum(c(ipv13_w, ipv14_w, ipv15_w)) - 3,
     cyber_nonmiss = sum(!is.na(c(ipv13_w, ipv14_w, ipv15_w))),
     
-    control_score = (control_score - 1) / 4,
-    psychological_score = (psychological_score - 1) / 4,
-    ipv_score = (ipv_score - 1) / 4,
-    physical_score = (physical_score - 1) / 4,
-    sexual_score = (sexual_score - 1) / 4,
-    cyber_score = (cyber_score - 1) / 4
+    # control_score = (control_sum / control_nonmiss - 1) / 4,
+    # psychological_score = (psychological_sum / psychological_nonmiss - 1) / 4,
+    # ipv_score = (ipv_sum / ipv_nonmiss - 1) / 4,
+    # physical_score = (physical_sum / physical_nonmiss - 1) / 4,
+    # sexual_score = (sexual_sum / sexual_nonmiss - 1) / 4,
+    # cyber_score = (cyber_sum / cyber_nonmiss - 1) / 4
+    
+    control_score = (control_sum) / 4,
+    psychological_score = (psychological_sum) / 4,
+    ipv_score = (ipv_sum) / 4,
+    physical_score = (physical_sum) / 4,
+    sexual_score = (sexual_sum) / 4,
+    cyber_score = (cyber_sum) / 4
   ) |>
   ungroup()
+
+# severity
+rmc <-
+  rmc |>
+  mutate(
+    ipv_severity = case_when(
+      ((ipv7_w == 2) + (ipv8_w == 2) + (ipv9_w == 2)) >= 1 &
+        ipv7_w < 3 & ipv8_w < 3 & ipv9_w == 1 & ipv10_w < 3 & 
+        ipv11_w == 1 & ipv12_w == 1 ~ "Moderate",
+      any_ipv == 1 ~ "Severe",
+      any_ipv == 0 ~ "None",
+      TRUE ~ NA_character_
+    ),
+    ipv_severity = factor(ipv_severity, levels = c("None", "Moderate", "Severe")),
+    ipv_severity_moderate = as.numeric(ipv_severity == "Moderate"),
+    ipv_severity_severe = as.numeric(ipv_severity == "Severe"),
+    
+    control_z = (control_sum - mean(control_sum, na.rm = TRUE)) / 
+      sd(control_sum, na.rm = TRUE), 
+    psychological_z = (psychological_sum - mean(psychological_sum, na.rm = TRUE)) / 
+      sd(psychological_sum, na.rm = TRUE), 
+    ipv_z = (ipv_sum - mean(ipv_sum, na.rm = TRUE)) / 
+      sd(ipv_sum, na.rm = TRUE), 
+    physical_z = (physical_sum - mean(physical_sum, na.rm = TRUE)) / 
+      sd(physical_sum, na.rm = TRUE), 
+    sexual_z = (sexual_sum - mean(sexual_sum, na.rm = TRUE)) / 
+      sd(sexual_sum, na.rm = TRUE), 
+    cyber_z = (cyber_sum - mean(cyber_sum, na.rm = TRUE)) / 
+      sd(cyber_sum, na.rm = TRUE)
+  )
 
 # time to event
 rmc <- 
@@ -87,6 +142,7 @@ rmc <-
     )
     
   )
+
 
 
 # Control and decision-making - is a simple arithmetic mean index of 8 questions
@@ -264,6 +320,21 @@ rmc <-
   )
 
 
+# attrition ---------------------------------------------------------------
+
+rmc <-
+  rmc |>
+  mutate(
+    responded_w = as.numeric(id_status_w == 1),
+    attrited_w = as.numeric(id_status_w != 1),
+    
+    responded_m = as.numeric(id_status_m == 1),
+    attrited_m = as.numeric(id_status_m != 1),
+    
+    responded_m = replace(responded_m, is.na(responded_m), 0),
+    attrited_m = replace(attrited_m, is.na(attrited_m), 1)
+  )
+
 # experimenter demand -----------------------------------------------------
 
 rmc <- 
@@ -285,5 +356,55 @@ rmc <-
                    bias_v3_13_m) / 13
     
   )
+
+
+# baseline propensity for violence ----------------------------------------
+
+prognostic_model_control_covs <- 
+  postlasso(
+    covariates = bl_covariates,
+    outcome = "any_ipv", 
+    data = subset(rmc, treatment == 0),
+    logit = TRUE
+  )
+
+prognostic_model_control <- glm(
+  formula = reformulate(
+    termlabels = prognostic_model_control_covs$covariate,
+    response = "any_ipv"
+  ),
+  family = binomial(link = "logit"),
+  data = subset(rmc, treatment == 0)
+)
+
+prognostic_model_covs <- 
+  postlasso(
+    covariates = bl_covariates[!str_detect(bl_covariates, "ipv([7-9]|10|11|12)_w_bl")],
+    outcome = "any_ipv_bl", 
+    data = rmc,
+    logit = TRUE
+  )
+
+prognostic_model <- glm(
+  formula = reformulate(
+    termlabels = prognostic_model_covs$covariate,
+    response = "any_ipv_bl"
+  ),
+  family = binomial(link = "logit"),
+  data = rmc
+)
+
+
+rmc <- 
+  rmc |>
+  mutate(
+    p_violence = predict(prognostic_model_control,
+                         newdata = rmc,
+                         type = "response"),
+    p_violence_bl = predict(prognostic_model,
+                            newdata = rmc,
+                            type = "response")
+  )
+
 
 

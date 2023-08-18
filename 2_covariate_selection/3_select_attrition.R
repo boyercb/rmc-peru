@@ -1,8 +1,74 @@
 # double post-selection ---------------------------------------------------
 
 # select baseline covariates that predict response (r ~ x)
-r_selected <- 
-  lapply(outcomes, 
-         function(x) postlasso(bl_covariates, x, rmc, func = is.na))
+r_selected <- postlasso(
+  covariates = 
+    bl_covariates[!str_detect(
+      bl_covariates, 
+      paste0("(", paste(time_invariant, collapse = ")|("), ")")
+    )],
+  outcome = "responded_w", 
+  data = rmc,
+  # fixed_effects = paste0("strata_new_", 1:4)
+  logit = TRUE
+)
 
-r_selected <- bind_rows(r_selected)
+# fit model for inverse probability of response weights
+response_weights <- 
+  lapply(outcomes, 
+         function(x) {
+           y_covs <- y_selected$covariate[
+             y_selected$outcome == x 
+           ]
+           y_covs <- y_covs[!str_detect(
+             y_covs, 
+             paste0("(", paste(time_invariant, collapse = ")|("), ")")
+           )]
+           
+           r_covs <- r_selected$covariate
+           covs <- unique(c(y_covs, r_covs))
+           
+           if (length(c(y_covs, r_covs)) > 0) {
+             fit_n <- glm(
+               formula = reformulate(
+                 termlabels = c("1"),
+                 response = "responded_w"
+               ),
+               family = binomial(link = "logit"),
+               data = rmc
+             )
+             
+             fit_d <- glm(
+               formula = reformulate(
+                 termlabels = c(
+                   "treatment",
+                   covs,
+                   paste0("treatment:", covs)
+                 ),
+                 response = "responded_w"
+               ),
+               family = binomial(link = "logit"),
+               data = rmc
+             )
+             
+             p_n <- predict(
+               fit_n, 
+               newdata = subset(rmc, id_status_w == 1),
+               type = "response"
+             )
+             p_d <- predict(
+               fit_d, 
+               newdata = subset(rmc, id_status_w == 1),
+               type = "response"
+             )
+             w <- p_n / p_d
+           } else {
+             fit <- NULL
+             w <- rep(1, nrow(subset(rmc, id_status_w == 1)))
+           }
+           w
+         })
+
+names(response_weights) <- outcomes
+
+

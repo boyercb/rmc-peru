@@ -17,14 +17,14 @@ violence_item_descriptions <- c(
   "forced acts",
   "reviewed social media",
   "reviewed messages",
-  "revenge porn"
+  "shared intimate photos"
 )
 
 
 violence_item_models <- 
   lapply(X = violence_items, 
          FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:7, "_c")
+           strata_FE <- paste0("strata_new_", 2:4, "_c")
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
@@ -32,7 +32,7 @@ violence_item_models <-
                } else {
                  c("treatment", strata_FE, paste0("treatment:", strata_FE))
                },
-               response = outcome,
+               response = paste0("I(", outcome, "> 1)"),
              ),
              #fixed_effects = ~factor(strata),
              data = filter(rmc, id_status_w == 1)
@@ -76,19 +76,19 @@ ggsave(
 # other primary outcomes --------------------------------------------------
 
 control_item_descriptions <- c(
-  "what to cook",
-  "visit friends/family",
-  "spending her earnings",
-  "what to wear",
-  "spending his earnings",
-  "healthcare",
-  "major purchases"
+  "what to cook (w)",
+  "visit friends/family (w)",
+  "spending her earnings (w)",
+  "what to wear (w)",
+  "spending his earnings (w)",
+  "healthcare (w)",
+  "major purchases (w)"
 )
 
 control_item_models <- 
   lapply(X = control_items, 
          FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:7, "_c")
+           strata_FE <- paste0("strata_new_", 2:4, "_c")
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
@@ -111,14 +111,14 @@ control_item_plot_data <-
 control_item_plot_data$outcome <- control_item_descriptions
 
 consent_item_descriptions <- c(
-  "controls when to have sex",
-  "confident saying no"
+  "controls when to have sex (w)",
+  "confident saying no (w)"
 )
 
 consent_item_models <- 
   lapply(X = consent_items, 
          FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:7, "_c")
+           strata_FE <- paste0("strata_new_", 2:4, "_c")
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
@@ -173,7 +173,7 @@ comm_item_descriptions <- c(
 comm_item_models <- 
   lapply(X = comm_items, 
          FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:7, "_c")
+           strata_FE <- paste0("strata_new_", 2:4, "_c")
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {

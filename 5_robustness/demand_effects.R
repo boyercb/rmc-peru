@@ -3,11 +3,14 @@ itt_demand <-
     rep(demand_outcomes, each = 2),
     rep(c(FALSE, TRUE), length(demand_outcomes)),
     function(outcome, adjusted) {
-      strata_FE <- paste0("strata_new_", 2:7, "_c")
+      strata_FE <- c(
+        paste0("strata_new_", 2:4, "_c"),
+        paste0("batch_", 2:6, "_c")
+      )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      #r_covs <- r_selected$covariate[r_selected$outcome == outcome]
-      z_covs <- z_selected$covariate[z_selected$outcome == outcome]
-      covs <- unique(c(y_covs, z_covs, strata_FE))
+      r_covs <- r_selected$covariate
+      z_covs <- z_selected$covariate
+      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
       
       lm_robust(
         reformulate(
@@ -32,6 +35,7 @@ make_report_table(
   outcomes = demand_outcomes[1:2],
   outcome_labels = demand_labels[1:2],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on donating to charity (placebo) \\label{tab:itt_demand_charity}",
   data = rmc
 ) |>
   save_kable(
@@ -43,6 +47,7 @@ make_report_table(
   outcomes = demand_outcomes[3:4],
   outcome_labels = demand_labels[3:4],
   treatment = "treatment",
+  title = "ITT estimates of effects of HEP on Marlowe Social Desirability Index \\label{tab:itt_demand_sdb}",
   data = rmc
 ) |>
   save_kable(

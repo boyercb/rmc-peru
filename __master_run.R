@@ -27,7 +27,7 @@ source("1_cleaning/2_merge.R")
 
 source("1_cleaning/3_covariates.R")
 
-#source("1_cleaning/4_impute.R")
+# source("1_cleaning/4_impute.R")
 
 source("1_cleaning/5_outcomes.R")
 
@@ -40,7 +40,9 @@ source("2_covariate_selection/1_select_itt.R")
 
 source("2_covariate_selection/2_select_compliance.R")
 
-# source("2_covariate_selection/3_select_attrition.R")
+source("2_covariate_selection/3_select_attrition.R")
+
+source("2_covariate_selection/4_select_stratified.R")
 
 
 # intent-to-treat ---------------------------------------------------------
@@ -53,11 +55,17 @@ source("3_itt/3_item_plots.R")
 
 source("3_itt/4_subgroups.R")
 
+source("3_itt/5_subgroup_plots.R")
+
 
 # compliance --------------------------------------------------------------
 
+source("4_compliance/iv_estimates.R")
 
 # robustness --------------------------------------------------------------
+
+
+source("5_robustness/attrition.R")
 
 source("5_robustness/demand_effects.R")
 

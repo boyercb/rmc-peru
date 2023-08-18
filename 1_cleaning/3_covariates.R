@@ -52,15 +52,22 @@ rmc <-
       (ipv8_w_bl== 1 & ipv11_w_bl == 1 & ipv12_w_bl == 1) & 
         ipv_short_form_w_bl == 1 ~ 0,
       (ipv7_w_bl > 1 | ipv8_w_bl > 1 | ipv9_w_bl > 1 | ipv10_w_bl > 1 | 
-         ipv11_w_bl > 1) & strata == 4 ~ 1,
+         ipv11_w_bl > 1) & batch == 1 ~ 1,
       (ipv7_w_bl == 1 & ipv8_w_bl == 1 & ipv9_w_bl == 1 & ipv10_w_bl == 1 & 
-         ipv11_w_bl == 1) & strata == 4 ~ 0,
+         ipv11_w_bl == 1) & batch == 1 ~ 0,
       (ipv7_w_bl > 1 | ipv8_w_bl > 1 | ipv9_w_bl > 1 | ipv10_w_bl > 1 | 
-         ipv11_w_bl > 1 | ipv12_w_bl > 1) & strata != 4 ~ 1,
+         ipv11_w_bl > 1 | ipv12_w_bl > 1) & batch != 1 ~ 1,
       (ipv7_w_bl == 1 & ipv8_w_bl == 1 & ipv9_w_bl == 1 & ipv10_w_bl == 1 & 
-         ipv11_w_bl == 1 & ipv12_w_bl == 1) & strata != 4 ~ 0,
+         ipv11_w_bl == 1 & ipv12_w_bl == 1) & batch != 1 ~ 0,
       TRUE ~ NA_integer_
     ), 
+    any_psychological_bl =  case_when(
+      ipv5_w_bl > 1 & ipv_short_form_w_bl == 1 ~ 1,
+      ipv5_w_bl == 1 & ipv_short_form_w_bl == 1 ~ 0,
+      ipv5_w_bl > 1 | ipv6_w_bl > 1 ~ 1,
+      ipv5_w_bl == 1 & ipv6_w_bl == 1 ~ 0,
+      TRUE ~ NA_integer_
+    ),
     any_physical_bl = case_when(
       ipv8_w_bl > 1 & ipv_short_form_w_bl == 1 ~ 1,
       ipv8_w_bl == 1 & ipv_short_form_w_bl == 1 ~ 0,
@@ -80,6 +87,41 @@ rmc <-
     any_sexual_bl = replace(any_sexual_bl, participant_id %in% c(235, 650, 753, 870), 0)
   ) 
 
+rmc$ipv_refusals_bl <- 
+  rowSums(is.na(rmc[, paste0("ipv", 7:12, "_w_bl")]))
+
+rmc$ipv_refusals_bl <- ifelse(
+  rmc$batch == 1 & is.na(rmc$ipv12_w_bl),
+  rmc$ipv_refusals_bl - 1,
+  rmc$ipv_refusals_bl
+)
+
+rmc$ipv_refusals_bl <- ifelse(
+  rmc$batch == 6 & rmc$ipv_refusals_bl == 6,
+  0,
+  rmc$ipv_refusals_bl
+)
+  
+rmc$any_ipv_refusals_bl <- as.numeric(rmc$ipv_refusals_bl > 0)
+
+
+
+rmc <- 
+  rmc |>
+  rowwise() |>
+  mutate(
+    psychological_score_bl = mean(c(ipv5_w_bl, ipv6_w_bl), na.rm = TRUE),
+    ipv_score_bl = mean(c(ipv7_w_bl, ipv8_w_bl, ipv9_w_bl, ipv10_w_bl, ipv11_w_bl, ipv12_w_bl), na.rm = TRUE),
+    physical_score_bl = mean(c(ipv7_w_bl, ipv8_w_bl, ipv9_w_bl, ipv10_w_bl), na.rm = TRUE),
+    sexual_score_bl = mean(c(ipv11_w_bl, ipv12_w_bl), na.rm = TRUE),
+
+    psychological_score_bl = (psychological_score_bl - 1) / 4,
+    ipv_score_bl = (ipv_score_bl - 1) / 4,
+    physical_score_bl = (physical_score_bl - 1) / 4,
+    sexual_score_bl = (sexual_score_bl - 1) / 4,
+  ) |>
+  ungroup()
+
 # create new strata indicators
 rmc <-
   rmc |>
@@ -89,10 +131,11 @@ rmc <-
       strata == 2 ~ 2,
       strata == 3 & any_ipv_bl == 0 ~ 1,
       strata == 3 & any_ipv_bl == 1 ~ 3,
-      strata == 4 & any_ipv_bl == 0 ~ 4,
-      strata == 4 & any_sexual_bl == 1 & any_physical_bl == 0 ~ 5,
-      strata == 4 & any_ipv_bl == 1 ~ 6,
-      strata == 5 ~ 7
+      strata == 4 ~ 4
+      # strata == 4 & any_ipv_bl == 0 ~ 1,
+      # strata == 4 & any_sexual_bl == 1 & any_physical_bl == 0 ~ 2,
+      # strata == 4 & any_ipv_bl == 1 ~ 3,
+      # strata == 4 & is.na(any_ipv_bl) ~ 4
     )
   )
 
@@ -115,6 +158,12 @@ rmc <-
     pregnant_w_bl = replace(pregnant_w, pregnant_months_w < 20, 0)
   )
 
+time_invariant <- c(
+  "children_num_w_bl",
+  "children_num5years_w_bl",
+  "pregnant_w_bl"
+)
+
 blw_covariates_cont <-
   c(blw_covariates_cont,
     "children_num_w_bl",
@@ -122,7 +171,6 @@ blw_covariates_cont <-
 
 blw_covariates_bin <-
   c(blw_covariates_bin, "ipv_short_form_w_bl", "pregnant_w_bl")
-
 
 
 # prep additional covariates ----------------------------------------------
@@ -146,21 +194,27 @@ na_indicators <-
 
 # create dummy variables for categorical variables
 dummy_variables <-
-  map_dfc(c(blm_covariates_cat, blw_covariates_cat, "strata_new"),
-          function(cov, data) {
-            d <- make_dummies(data[[cov]], prefix = cov)
-            if (cov %in% miss_mean_impute) {
-              for (j in 1:ncol(d)) {
-                d[, j] <- ifelse(
-                  is.na(d[, j]), 
-                  mean(d[, j], na.rm = TRUE), 
-                  d[, j]
-                )
-              }
-            }
-            d
-          },
-          data = rmc)
+  map_dfc(c(
+    blm_covariates_cat,
+    blw_covariates_cat,
+    "strata_new",
+    "batch",
+    "group"
+  ),
+  function(cov, data) {
+    d <- make_dummies(data[[cov]], prefix = cov)
+    if (cov %in% miss_mean_impute) {
+      for (j in 1:ncol(d)) {
+        d[, j] <- ifelse(
+          is.na(d[, j]), 
+          mean(d[, j], na.rm = TRUE), 
+          d[, j]
+        )
+      }
+    }
+    d
+  },
+  data = rmc)
 
 # bind cols
 rmc <- bind_cols(rmc, na_indicators, dummy_variables)
@@ -182,8 +236,6 @@ bl_covariates <-
     blm_covariates_bin,
     blw_covariates_bin,
     colnames(polys)
-    # blm_covariates_cont,
-    # blw_covariates_cont
     )
 
 # recode NA to same value
@@ -196,18 +248,42 @@ rmc <- rmc |>
   )
 
 nonzero_responses <- colSums(rmc[, bl_covariates] > 0)
+nonzero_responses_s1 <- colSums(rmc[rmc$strata_new %in% c(1), bl_covariates] > 0)
+nonzero_responses_s2 <- colSums(rmc[rmc$strata_new %in% c(2, 3), bl_covariates] > 0)
+
 covs_with_few_responses <- names(nonzero_responses)[nonzero_responses <= 20]
+covs_with_few_responses_s1 <- names(nonzero_responses_s1)[nonzero_responses_s1 <= 20]
+covs_with_few_responses_s2 <- names(nonzero_responses_s2)[nonzero_responses_s2 <= 20]
 
 bl_covariates <- bl_covariates[!bl_covariates %in% covs_with_few_responses]
+bl_covariates_s1 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_s1]
+bl_covariates_s2 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_s2]
 
 # center covariates
 rmc[, paste0(bl_covariates, "_c")] <- 
   scale(rmc[, bl_covariates], center = TRUE, scale = FALSE)
 
+rmc[rmc$strata_new %in% c(2, 3), paste0(bl_covariates_s2, "_c_s2")] <- 
+  scale(rmc[rmc$strata_new %in% c(2, 3), bl_covariates_s2], center = TRUE, scale = FALSE)
+
+rmc[rmc$strata_new %in% c(1), paste0(bl_covariates_s1, "_c_s1")] <- 
+  scale(rmc[rmc$strata_new %in% c(1), bl_covariates_s1], center = TRUE, scale = FALSE)
+
 
 bl_covariates_raw <- bl_covariates
 bl_covariates <- paste0(bl_covariates, "_c")
+bl_covariates_s1 <- paste0(bl_covariates_s1, "_c_s1")
+bl_covariates_s2 <- paste0(bl_covariates_s2, "_c_s2")
 
+# remove indicators from list
+bl_covariates <- 
+  bl_covariates[!str_detect(bl_covariates, "(strata_new)|(batch)|(group)")]
+
+bl_covariates_s1 <- 
+  bl_covariates_s1[!str_detect(bl_covariates_s1, "(strata_new)|(batch)|(group)")]
+
+bl_covariates_s2 <- 
+  bl_covariates_s2[!str_detect(bl_covariates_s2, "(strata_new)|(batch)|(group)")]
 
 violence_items <- paste0("ipv", 1:15, "_w")
 
@@ -255,4 +331,9 @@ bias_items <- c(
   paste0("bias_v3_", 1:13, "_w"),
   paste0("bias_v3_", 1:13, "_m")
 )
+
+
+
+
+
 
