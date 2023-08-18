@@ -1,7 +1,7 @@
 
 # function to shorten data paths
 get_data <- function(path) {
-  paste0("../../3_data/RMC/1_data/", path)
+  paste0("__data/RMC/1_data/", path)
 }
 
 # pretty print decimal places
