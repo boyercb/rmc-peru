@@ -8,7 +8,7 @@ lassocovs <- c(
           
 # select baseline covariates that predict outcome (y ~ x)
 y_selected <- 
-  lapply(outcomes, 
+  lapply(c(outcomes, violence_items, control_items, consent_items, comm_items),
          function(x) postlasso(
            covariates = lassocovs,
            outcome = x, 
@@ -16,7 +16,7 @@ y_selected <-
            fixed_effects = c(
              paste0("strata_new_", 2:4, "_c"),
              paste0("batch_", 2:6, "_c")
-           ),
+           )
           )
         )
 
@@ -27,5 +27,8 @@ z_selected <- postlasso(
   covariates = bl_covariates,
   outcome = "treatment", 
   data = filter(rmc, id_status_w == 1),
-  fixed_effects = paste0("strata_new_", 1:4)
+  fixed_effects = c(
+    paste0("strata_new_", 2:4, "_c"),
+    paste0("batch_", 2:6, "_c")
+  )
 )

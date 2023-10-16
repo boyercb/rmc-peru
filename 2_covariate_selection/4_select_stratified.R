@@ -10,12 +10,11 @@ y_selected_strata <-
         lapply(c(outcomes, "any_ipv_refusals"),
                function(x) postlasso(
                  covariates = c(
-                   covlist, 
-                   paste0("batch_", 1:6, "_c"),
-                   paste0("group_", 1:27, "_c")
-                 ),
+                   covlist
+                  ),
                  outcome = x, 
-                 data = filter(rmc, id_status_w == 1 & strata_new %in% s)
+                 data = filter(rmc, id_status_w == 1 & strata_new %in% s),
+                 fixed_effects = paste0("batch_", 1:5, "_c")
                ))
       covs <- bind_rows(covs)
       covs$strata <- s[1]
@@ -29,8 +28,7 @@ y_selected_strata_bl <-
   postlasso(
     covariates = c(
       bl_covariates[!str_replace(bl_covariates, "_c$", "") %in% colnames(na_indicators)], 
-      paste0("batch_", 1:6, "_c"),
-      paste0("group_", 1:27, "_c")
+      paste0("batch_", 1:6, "_c")
     ),
     outcome = "any_ipv_refusals_bl", 
     data = filter(rmc, ipv_short_form_w_bl == 0 & batch != 1 & strata_new == 1)

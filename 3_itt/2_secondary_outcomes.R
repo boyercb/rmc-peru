@@ -11,12 +11,12 @@ itt_secondary <-
       )
       
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
-      r_covs <- r_selected$covariate
-      if (outcome == "arguments") {
-        r_covs <- NULL
-      }
+      # r_covs <- r_selected$covariate
+      # if (outcome == "arguments") {
+      #   r_covs <- NULL
+      # }
       z_covs <- z_selected$covariate
-      covs <- unique(c(y_covs, r_covs, z_covs, strata_FE))
+      covs <- unique(c(y_covs, z_covs, strata_FE))
       
       lm_robust(
         reformulate(

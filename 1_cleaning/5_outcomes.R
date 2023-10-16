@@ -10,78 +10,125 @@ rmc <-
   rmc |>
   mutate(
     any_control = case_when(
+      (ipv1_w > 1 | ipv2_w > 1) & long_short_survey_w == "Short" ~ 1,
+      (ipv1_w == 1 & ipv2_w == 1) & long_short_survey_w == "Short" ~ 0,
       ipv1_w > 1 | ipv2_w > 1 | ipv3_w > 1 | ipv4_w > 1 ~ 1,
       ipv1_w == 1 & ipv2_w == 1 & ipv3_w == 1 & ipv4_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
     any_psychological = case_when(
+      ipv5_w > 1 & long_short_survey_w == "Short" ~ 1,
+      ipv5_w == 1 & long_short_survey_w == "Short" ~ 0,
       ipv5_w > 1 | ipv6_w > 1 ~ 1,
       ipv5_w == 1 & ipv6_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
     any_ipv = case_when(
+      (ipv7_w > 1 | ipv12_w > 1) & long_short_survey_w == "Short" ~ 1,
+      (ipv7_w == 1 & ipv12_w == 1) & long_short_survey_w == "Short" ~ 0,
       ipv7_w > 1 | ipv8_w > 1 | ipv9_w > 1 | ipv10_w > 1 | ipv11_w > 1 | ipv12_w > 1 ~ 1,
       ipv7_w == 1 & ipv8_w == 1 & ipv9_w == 1 & ipv10_w == 1 & ipv11_w == 1 & ipv12_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
     any_physical = case_when(
+      ipv7_w > 1 & long_short_survey_w == "Short" ~ 1,
+      ipv7_w == 1 & long_short_survey_w == "Short" ~ 0,
       ipv7_w > 1 | ipv8_w > 1 | ipv9_w > 1 | ipv10_w > 1 ~ 1,
       ipv7_w == 1 & ipv8_w == 1 & ipv9_w == 1 & ipv10_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
     any_sexual = case_when(
+      (ipv12_w > 1) & long_short_survey_w == "Short" ~ 1,
+      (ipv12_w == 1) & long_short_survey_w == "Short" ~ 0,
       ipv11_w > 1 | ipv12_w > 1 ~ 1,
       ipv11_w == 1 & ipv12_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
     any_cyber = case_when(
+      ipv13_w > 1 & long_short_survey_w == "Short" ~ 1,
+      ipv13_w == 1 & long_short_survey_w == "Short" ~ 0,
       ipv13_w > 1 | ipv14_w > 1 | ipv15_w > 1 ~ 1,
       ipv13_w == 1 & ipv14_w == 1 & ipv15_w == 1 ~ 0,
       TRUE ~ NA_integer_
     ),
-    any_severe = case_when(
+    any_sometimes = case_when(
+      (ipv7_w > 2 | ipv12_w > 2) & long_short_survey_w == "Short" ~ 1,
+      (ipv7_w <= 2 & ipv12_w <= 2) & long_short_survey_w == "Short" ~ 0,
       ipv7_w > 2 | ipv8_w > 2 | ipv9_w > 2 | ipv10_w > 2 | ipv11_w > 2 | ipv12_w > 2 ~ 1,
       ipv7_w <= 2 & ipv8_w <= 2  & ipv9_w <= 2  & ipv10_w <= 2  & ipv11_w <= 2  & ipv12_w <= 2  ~ 0,
       TRUE ~ NA_integer_
     ),
-    any_severe_physical = case_when(
+    any_sometimes_physical = case_when(
+      ipv7_w > 2 & long_short_survey_w == "Short" ~ 1,
+      ipv7_w <= 2 & long_short_survey_w == "Short" ~ 0,
       ipv7_w > 2 | ipv8_w > 2 | ipv9_w > 2 | ipv10_w > 2 ~ 1,
       ipv7_w <= 2 & ipv8_w <= 2  & ipv9_w <= 2  & ipv10_w <= 2 ~ 0,
       TRUE ~ NA_integer_
     ),
-    any_severe_sexual = case_when(
+    any_sometimes_sexual = case_when(
+      (ipv12_w > 2) & long_short_survey_w == "Short" ~ 1,
+      (ipv12_w <= 2) & long_short_survey_w == "Short" ~ 0,
       ipv11_w > 2 | ipv12_w > 2 ~ 1,
       ipv11_w <= 2  & ipv12_w <= 2 ~ 0,
       TRUE ~ NA_integer_
     ),
+    any_often = case_when(
+      (ipv7_w > 3 | ipv12_w > 3) & long_short_survey_w == "Short" ~ 1,
+      (ipv7_w <= 3 & ipv12_w <= 3) & long_short_survey_w == "Short" ~ 0,
+      ipv7_w > 3 | ipv8_w > 3 | ipv9_w > 3 | ipv10_w > 3 | ipv11_w > 3 | ipv13_w > 3 ~ 1,
+      ipv7_w <= 3 & ipv8_w <= 3  & ipv9_w <= 3  & ipv10_w <= 3  & ipv11_w <= 3  & ipv13_w <= 3  ~ 0,
+      TRUE ~ NA_integer_
+    ),
+    any_often_physical = case_when(
+      ipv7_w > 3 & long_short_survey_w == "Short" ~ 1,
+      ipv7_w <= 3 & long_short_survey_w == "Short" ~ 0,
+      ipv7_w > 3 | ipv8_w > 3 | ipv9_w > 3 | ipv10_w > 3 ~ 1,
+      ipv7_w <= 3 & ipv8_w <= 3  & ipv9_w <= 3  & ipv10_w <= 3 ~ 0,
+      TRUE ~ NA_integer_
+    ),
+    any_often_sexual = case_when(
+      (ipv12_w > 3) & long_short_survey_w == "Short" ~ 1,
+      (ipv12_w <= 3) & long_short_survey_w == "Short" ~ 0,
+      ipv11_w > 3 | ipv13_w > 3 ~ 1,
+      ipv11_w <= 3  & ipv13_w <= 3 ~ 0,
+      TRUE ~ NA_integer_
+    )
   )
 
 rmc$ipv_refusals <- 
   rowSums(is.na(rmc[, paste0("ipv", 7:12, "_w")]))
+
+rmc$ipv_refusals[rmc$long_short_survey_w == "Short"] <- 
+  rowSums(is.na(rmc[rmc$long_short_survey_w == "Short", paste0("ipv", c(7,12), "_w")]))
+
 rmc$any_ipv_refusals <- as.numeric(rmc$ipv_refusals > 0)
   
 rmc <- 
   rmc |>
   rowwise() |>
   mutate(
-    control_sum = sum(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w)) - 4,
     control_nonmiss = sum(!is.na(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w))),
+    control_sum = ifelse(control_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv1_w, ipv2_w, ipv3_w, ipv4_w), na.rm = TRUE) - 4, NA),
     
-    psychological_sum = sum(c(ipv5_w, ipv6_w)) - 2,
     psychological_nonmiss = sum(!is.na(c(ipv5_w, ipv6_w))),
+    psychological_sum = ifelse(psychological_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv5_w, ipv6_w), na.rm = TRUE) - 2, NA),
 
-    ipv_sum = sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w)) - 6,
     ipv_nonmiss = sum(!is.na(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w))),
+    ipv_sum = ifelse(ipv_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w, ipv11_w, ipv12_w), na.rm = TRUE) - 6, NA),
     
-    physical_sum = sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w)) - 4,
     physical_nonmiss = sum(!is.na(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w))),
+    physical_sum = ifelse(physical_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv7_w, ipv8_w, ipv9_w, ipv10_w), na.rm = TRUE) - 4, NA),
     
-    sexual_sum = sum(c(ipv11_w, ipv12_w)) - 2,
     sexual_nonmiss = sum(!is.na(c(ipv11_w, ipv12_w))),
+    sexual_sum = ifelse(sexual_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv11_w, ipv12_w), na.rm = TRUE) - 2, NA),
     
-    cyber_sum = sum(c(ipv13_w, ipv14_w, ipv15_w)) - 3,
     cyber_nonmiss = sum(!is.na(c(ipv13_w, ipv14_w, ipv15_w))),
+    cyber_sum = ifelse(cyber_nonmiss != 0 & long_short_survey_w == "Long", sum(c(ipv13_w, ipv14_w, ipv15_w), na.rm = TRUE) - 3, NA),
     
+    ipv_breadth = ifelse(ipv_nonmiss != 0 & long_short_survey_w == "Long", mean(c(ipv7_w > 1, ipv8_w > 1, ipv9_w > 1, ipv10_w > 1, ipv11_w > 1, ipv12_w > 1), na.rm = TRUE),  NA),
+    physical_breadth = ifelse(physical_nonmiss != 0 & long_short_survey_w == "Long", mean(c(ipv7_w > 1, ipv8_w > 1, ipv9_w > 1, ipv10_w > 1), na.rm = TRUE), NA),
+    sexual_breadth = ifelse(sexual_nonmiss != 0 & long_short_survey_w == "Long", mean(c(ipv11_w > 1, ipv12_w > 1), na.rm = TRUE), NA),
+      
     # control_score = (control_sum / control_nonmiss - 1) / 4,
     # psychological_score = (psychological_sum / psychological_nonmiss - 1) / 4,
     # ipv_score = (ipv_sum / ipv_nonmiss - 1) / 4,
@@ -103,9 +150,11 @@ rmc <-
   rmc |>
   mutate(
     ipv_severity = case_when(
-      ((ipv7_w == 2) + (ipv8_w == 2) + (ipv9_w == 2)) >= 1 &
+      ((ipv7_w == 2) >= 1 & ipv7_w < 3 & ipv12_w == 1) & 
+        long_short_survey_w == "Short" ~ "Moderate",
+      (((ipv7_w == 2) + (ipv8_w == 2) + (ipv9_w == 2)) >= 1 &
         ipv7_w < 3 & ipv8_w < 3 & ipv9_w == 1 & ipv10_w < 3 & 
-        ipv11_w == 1 & ipv12_w == 1 ~ "Moderate",
+        ipv11_w == 1 & ipv12_w == 1) & long_short_survey_w == "Long" ~ "Moderate",
       any_ipv == 1 ~ "Severe",
       any_ipv == 0 ~ "None",
       TRUE ~ NA_character_

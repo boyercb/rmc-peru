@@ -11,15 +11,23 @@ violence_outcomes <- c(
   "control_score",
   "psychological_score",
   "cyber_score",
-  "any_severe",
-  "any_severe_physical",
-  "any_severe_sexual",
+  "any_sometimes",
+  "any_sometimes_physical",
+  "any_sometimes_sexual",
+  "any_often",
+  "any_often_physical",
+  "any_often_sexual",
+  "ipv_breadth",
+  "physical_breadth",
+  "sexual_breadth",
   "ipv_z",
   "physical_z",
   "sexual_z",
   "control_z",
   "psychological_z",
-  "cyber_z"
+  "cyber_z",
+  "ipv_severity_moderate",
+  "ipv_severity_severe"
 )
 
 violence_labels <- c(
@@ -35,16 +43,35 @@ violence_labels <- c(
   "Control Index",
   "Psych. Index",
   "Cyber Index",
-  "Any Severe",
-  "Any Phys Severe",
-  "Any Sex Severe",
+  "\\\\shortstack{Any IPV \\\\\\\\ $\\\\geq$ Sometimes}",
+  "\\\\shortstack{Any Phys \\\\\\\\ $\\\\geq$ Sometimes}",
+  "\\\\shortstack{Any Sex \\\\\\\\ $\\\\geq$ Sometimes}",
+  "\\\\shortstack{Any IPV \\\\\\\\ $\\\\geq$ Often}",
+  "\\\\shortstack{Any Phys \\\\\\\\ $\\\\geq$ Often}",
+  "\\\\shortstack{Any Sex \\\\\\\\ $\\\\geq$ Often}",
+  "IPV Breadth",
+  "Physical Breadth",
+  "Sexual Breadth",
   "IPV Z-score",
   "Physical Z-score",
   "Sexual Z-score",
   "Control Z-score",
   "Psych. Z-score",
-  "Cyber Z-score"
+  "Cyber Z-score",
+  "Moderate IPV",
+  "Severe IPV"
 )
+
+violence_labels_no_stack <- 
+  gsub("\\\\shortstack{", "", violence_labels, fixed = T)
+violence_labels_no_stack <- 
+  gsub("\\\\geq", "\\geq", violence_labels_no_stack, fixed = T)
+violence_labels_no_stack <- 
+  gsub("\\\\\\\\", "", violence_labels_no_stack, fixed = T)
+violence_labels_no_stack <- 
+  gsub("Sometimes}", "Sometimes", violence_labels_no_stack, fixed = T)
+violence_labels_no_stack <- 
+  gsub("Often}", "Often", violence_labels_no_stack, fixed = T)
 
 time_to_violence_outcomes <- c(
   "ipv_control_lastime_w",
@@ -68,10 +95,17 @@ primary_outcomes <- c(
 )
 
 primary_labels <- c(
-  "Control & DM Index",
+  "Control \\\\& DM Index",
   "Consent Index",
   "Comm. Index"
 )
+
+primary_labels_no_stack <- 
+  c(
+    "Control & DM Index",
+    "Consent Index",
+    "Comm. Index"
+  )
 
 secondary_outcomes <- c(
   "satisfaction_m",
@@ -126,8 +160,8 @@ outcomes <-
 
 outcome_labels <-
   c(
-    violence_labels,
-    primary_labels,
+    violence_labels_no_stack,
+    primary_labels_no_stack,
     secondary_labels,
     #time_to_violence_labels,
     demand_labels

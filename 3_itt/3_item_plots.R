@@ -23,12 +23,24 @@ violence_item_descriptions <- c(
 
 violence_item_models <- 
   lapply(X = violence_items, 
-         FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:4, "_c")
+         FUN = function(outcome, adjusted = TRUE) {
+           strata_FE <- c(
+             paste0("strata_new_", 2:4, "_c"),
+             paste0("batch_", 2:6, "_c")
+           )
+           
+           y_covs <- y_selected$covariate[y_selected$outcome == "any_ipv"]
+           # r_covs <- r_selected$covariate
+           # if (outcome == "arguments") {
+           #   r_covs <- NULL
+           # }
+           z_covs <- z_selected$covariate
+           covs <- unique(c(y_covs, z_covs, strata_FE))
+           
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
-                 #c("treatment", covs, paste0("treatment:", covs))
+                 c("treatment", covs, paste0("treatment:", covs))
                } else {
                  c("treatment", strata_FE, paste0("treatment:", strata_FE))
                },
@@ -87,12 +99,23 @@ control_item_descriptions <- c(
 
 control_item_models <- 
   lapply(X = control_items, 
-         FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:4, "_c")
+         FUN = function(outcome, adjusted = TRUE) {
+           strata_FE <- c(
+             paste0("strata_new_", 2:4, "_c"),
+             paste0("batch_", 2:6, "_c")
+           )
+           
+           y_covs <- y_selected$covariate[y_selected$outcome == outcome]
+           # r_covs <- r_selected$covariate
+           # if (outcome == "arguments") {
+           #   r_covs <- NULL
+           # }
+           z_covs <- z_selected$covariate
+           covs <- unique(c(y_covs, z_covs, strata_FE))
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
-                 #c("treatment", covs, paste0("treatment:", covs))
+                 c("treatment", covs, paste0("treatment:", covs))
                } else {
                  c("treatment", strata_FE, paste0("treatment:", strata_FE))
                },
@@ -117,12 +140,23 @@ consent_item_descriptions <- c(
 
 consent_item_models <- 
   lapply(X = consent_items, 
-         FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:4, "_c")
+         FUN = function(outcome, adjusted = TRUE) {
+           strata_FE <- c(
+             paste0("strata_new_", 2:4, "_c"),
+             paste0("batch_", 2:6, "_c")
+           )
+           
+           y_covs <- y_selected$covariate[y_selected$outcome == outcome]
+           # r_covs <- r_selected$covariate
+           # if (outcome == "arguments") {
+           #   r_covs <- NULL
+           # }
+           z_covs <- z_selected$covariate
+           covs <- unique(c(y_covs, z_covs, strata_FE))
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
-                 #c("treatment", covs, paste0("treatment:", covs))
+                 c("treatment", covs, paste0("treatment:", covs))
                } else {
                  c("treatment", strata_FE, paste0("treatment:", strata_FE))
                },
@@ -172,12 +206,23 @@ comm_item_descriptions <- c(
 
 comm_item_models <- 
   lapply(X = comm_items, 
-         FUN = function(outcome, adjusted = FALSE) {
-           strata_FE <- paste0("strata_new_", 2:4, "_c")
+         FUN = function(outcome, adjusted = TRUE) {
+           strata_FE <- c(
+             paste0("strata_new_", 2:4, "_c"),
+             paste0("batch_", 2:6, "_c")
+           )
+           
+           y_covs <- y_selected$covariate[y_selected$outcome == outcome]
+           # r_covs <- r_selected$covariate
+           # if (outcome == "arguments") {
+           #   r_covs <- NULL
+           # }
+           z_covs <- z_selected$covariate
+           covs <- unique(c(y_covs, z_covs, strata_FE))
            lm_robust(
              reformulate(
                termlabels = if (adjusted) {
-                 #c("treatment", covs, paste0("treatment:", covs))
+                 c("treatment", covs, paste0("treatment:", covs))
                } else {
                  c("treatment", strata_FE, paste0("treatment:", strata_FE))
                },
