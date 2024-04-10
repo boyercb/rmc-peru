@@ -1,10 +1,9 @@
 # double post-selection ---------------------------------------------------
 
-lassocovs <- c(
-  bl_covariates 
-  # paste0("batch_", 1:6, "_c"),
-  # paste0("group_", 1:27, "_c")
-)
+lassocovs <- c(bl_covariates[!bl_covariates %in% c("any_ipv_bl_c",
+                                                   "any_physical_bl_c",
+                                                   "any_sexual_bl_c",
+                                                   "any_psychological_bl_c")])
           
 # select baseline covariates that predict outcome (y ~ x)
 y_selected <- 
@@ -14,8 +13,9 @@ y_selected <-
            outcome = x, 
            data = filter(rmc, id_status_w == 1),
            fixed_effects = c(
+             # "treatment",
              paste0("strata_new_", 2:4, "_c"),
-             paste0("batch_", 2:6, "_c")
+             paste0("batch_", 2:5, "_c")
            )
           )
         )
@@ -29,6 +29,6 @@ z_selected <- postlasso(
   data = filter(rmc, id_status_w == 1),
   fixed_effects = c(
     paste0("strata_new_", 2:4, "_c"),
-    paste0("batch_", 2:6, "_c")
+    paste0("batch_", 2:5, "_c")
   )
 )

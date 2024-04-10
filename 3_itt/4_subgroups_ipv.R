@@ -43,22 +43,55 @@ subgroup_tables <-
            function(x) {
              lm_robust(
                formula = reformulate(
-                 termlabels = c("treatment"),
+                 termlabels = c(
+                   "treatment",
+                   c(paste0("batch_", 2:5, "_c_s2"), "strata_new_3_c_s2"),
+                   paste0("treatment:", c(paste0("batch_", 2:5, "_c_s2"), "strata_new_3_c_s2"))
+                 ),
                  response = x
                ),
                data = subset(rmc, id_status_w == 1 & strata_new %in% c(2, 3))
              )
            })
          
+         fits0 <- map(
+           c(outcomes, paste0("I(", violence_items, ">1)")),
+           function(x) {
+             lm_robust(
+               formula = reformulate(
+                 termlabels = c(
+                   "treatment",
+                   c(paste0("batch_", 2:5, "_c_s1")),
+                   paste0("treatment:", c(paste0("batch_", 2:5, "_c_s1")))
+                 ),
+                 response = x
+               ),
+               data = subset(rmc, id_status_w == 1 & strata_new %in% c(1))
+             )
+           })
          
          pvalues1 <- sapply(
            fits1, 
            function(x) pull(filter(tidy(x), term == "treatment"), "p.value")
           )
          
+         pvalues0 <- sapply(
+           fits0, 
+           function(x) pull(filter(tidy(x), term == "treatment"), "p.value")
+         )
+         
+         est1 <- sapply(
+           fits1, 
+           function(x) pull(filter(tidy(x), term == "treatment"), "estimate")
+         )
+         
+         est0 <- sapply(
+           fits0, 
+           function(x) pull(filter(tidy(x), term == "treatment"), "estimate")
+         )
+         
          names(fits) <- c(outcomes, paste0("I(", violence_items, ">1)"))
 
-         
          tab <- bind_rows(lapply(fits, tidy))
 
          tab |>
@@ -82,8 +115,8 @@ subgroup_tables <-
              estimate_diff = add_stars(estimate_group1, p.value_diff), 
              mean_group1 = estimate_int1 + estimate_int2,
              mean_group2 = estimate_int2,
-             estimate_group1 = add_stars(estimate_group1 + estimate_group2, pvalues1),
-             estimate_group2 = add_stars(estimate_group2, p.value_group2)
+             estimate_group1 = add_stars(est1, pvalues1),
+             estimate_group2 = add_stars(est0, pvalues0)
            ) |>
            select(outcome,
                   mean_group1,
@@ -112,9 +145,22 @@ subgroup_tables_w_covs <-
             z_covs <- z_selected_strata$covariate[
                 z_selected_strata$strata == s[1]
             ]
-            # z_covs <- NULL
-            covs <- unique(c(y_covs, z_covs, paste0("batch_", 2:5, "_c_s", s[1])))
-            # covs <- NULL
+            if (s[1] == 2) {
+              covs <-
+                unique(c(
+                  y_covs,
+                  z_covs,
+                  paste0("batch_", 2:5, "_c_s", s[1]),
+                  paste0("strata_new_", 3, "_c_s", s[1])
+                ))
+            } else {
+              covs <-
+                unique(c(
+                  y_covs,
+                  z_covs,
+                  paste0("batch_", 2:5, "_c_s", s[1])
+                ))
+            }
             if (length(covs) > 0) {
               f <- lm_robust(
                 formula = reformulate(
@@ -127,7 +173,19 @@ subgroup_tables_w_covs <-
                 ),
                 data = subset(rmc, id_status_w == 1 & strata_new %in% s)
               ) 
-              
+              if (x == "any_physical") {
+                lm_robust(
+                  formula = reformulate(
+                    termlabels = c(
+                      "treatment",
+                      covs[!covs %in% c("ipv11_w_bl_4_c_s2")],
+                      paste0("treatment:", covs)
+                    ),
+                    response = x
+                  ),
+                  data = subset(rmc, id_status_w == 1 & strata_new %in% s)
+                ) |> print()
+              }
               f
             } else{
               lm_robust(
@@ -142,9 +200,9 @@ subgroup_tables_w_covs <-
             }
             
           })
-        
         names(fits) <- c(outcomes, paste0("I(", violence_items, ">1)"))
-
+        
+        
         tab <- bind_rows(lapply(fits, tidy))
         nobs <- sapply(fits, function(x) glance(x)$nobs[1])
         tab |>
@@ -358,8 +416,8 @@ kable(
   kable_styling(font_size = 9, 
                 latex_options = "hold_position") |>
   group_rows("Other primary outcomes", 1, 3, italic = T, bold = F) |>
-  group_rows("Secondary outcomes", 4, 14, italic = T, bold = F) |>
-  group_rows("Experimenter demand outcomes", 15, 18, italic = T, bold = F) |>
+  group_rows("Secondary outcomes", 4, 22, italic = T, bold = F) |>
+  group_rows("Experimenter demand outcomes", 23, 26, italic = T, bold = F) |>
   #row_spec()
   add_header_above(c(" "= 1,
                      "N"= 1,
@@ -423,8 +481,8 @@ kable(
   kable_styling(font_size = 9, 
                 latex_options = "hold_position") |>
   group_rows("Other primary outcomes", 1, 3, italic = T, bold = F) |>
-  group_rows("Secondary outcomes", 4, 14, italic = T, bold = F) |>
-  group_rows("Experimenter demand outcomes", 15, 18, italic = T, bold = F) |>
+  group_rows("Secondary outcomes", 4, 22, italic = T, bold = F) |>
+  group_rows("Experimenter demand outcomes", 23, 26, italic = T, bold = F) |>
   #row_spec()
   add_header_above(c(" "= 1,
                      "N"= 1,
@@ -775,8 +833,8 @@ kable(
 ) |>
   kable_styling(latex_options = "hold_position") |>
   group_rows("Other primary outcomes", 1, 3, italic = T, bold = F) |>
-  group_rows("Secondary outcomes", 4, 14, italic = T, bold = F) |>
-  group_rows("Experimenter demand outcomes", 15, 18, italic = T, bold = F) |>
+  group_rows("Secondary outcomes", 4, 22, italic = T, bold = F) |>
+  group_rows("Experimenter demand outcomes", 23, 26, italic = T, bold = F) |>
   add_header_above(c(" "= 1,
                      "IPV"= 2,
                      "No IPV:\nhigh propensity"= 2,

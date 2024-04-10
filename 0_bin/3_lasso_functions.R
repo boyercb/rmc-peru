@@ -23,7 +23,8 @@ postlasso <- function(covariates, outcome, data, fixed_effects = NULL, func = id
   ret <- tibble(
     outcome = outcome,
     covariate = names(selected),
-    value = selected
+    value = selected,
+    lambda = fit$lambda0
   )
   
   return(ret)

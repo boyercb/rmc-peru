@@ -45,4 +45,6 @@ __archive/
 8_report/*  
 __data/*
 
+6_tables/group/
+6_tables/new/
 .DS_Store

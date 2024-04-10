@@ -26,14 +26,10 @@ violence_item_models <-
          FUN = function(outcome, adjusted = TRUE) {
            strata_FE <- c(
              paste0("strata_new_", 2:4, "_c"),
-             paste0("batch_", 2:6, "_c")
+             paste0("batch_", 2:5, "_c")
            )
            
-           y_covs <- y_selected$covariate[y_selected$outcome == "any_ipv"]
-           # r_covs <- r_selected$covariate
-           # if (outcome == "arguments") {
-           #   r_covs <- NULL
-           # }
+           y_covs <- y_selected$covariate[y_selected$outcome == outcome]
            z_covs <- z_selected$covariate
            covs <- unique(c(y_covs, z_covs, strata_FE))
            
@@ -46,7 +42,6 @@ violence_item_models <-
                },
                response = paste0("I(", outcome, "> 1)"),
              ),
-             #fixed_effects = ~factor(strata),
              data = filter(rmc, id_status_w == 1)
            )     
          })
@@ -84,6 +79,8 @@ ggsave(
   height = 6
 )
 
+# make a table as well
+
 
 # other primary outcomes --------------------------------------------------
 
@@ -102,7 +99,7 @@ control_item_models <-
          FUN = function(outcome, adjusted = TRUE) {
            strata_FE <- c(
              paste0("strata_new_", 2:4, "_c"),
-             paste0("batch_", 2:6, "_c")
+             paste0("batch_", 2:5, "_c")
            )
            
            y_covs <- y_selected$covariate[y_selected$outcome == outcome]
@@ -143,7 +140,7 @@ consent_item_models <-
          FUN = function(outcome, adjusted = TRUE) {
            strata_FE <- c(
              paste0("strata_new_", 2:4, "_c"),
-             paste0("batch_", 2:6, "_c")
+             paste0("batch_", 2:5, "_c")
            )
            
            y_covs <- y_selected$covariate[y_selected$outcome == outcome]
@@ -209,7 +206,7 @@ comm_item_models <-
          FUN = function(outcome, adjusted = TRUE) {
            strata_FE <- c(
              paste0("strata_new_", 2:4, "_c"),
-             paste0("batch_", 2:6, "_c")
+             paste0("batch_", 2:5, "_c")
            )
            
            y_covs <- y_selected$covariate[y_selected$outcome == outcome]
@@ -274,3 +271,68 @@ ggsave(
 # pdf("09_endline_manuscript/figures/any_violence_coefficients.pdf", width = 5, height = 5)
 # plot_coefs(any_violence_plot_data) %>% print()
 # dev.off()
+
+
+
+# justification  ----------------------------------------------------------
+
+tolerance_item_descriptions <- c(
+  "Si una mujer le falta el respeto a su esposo o pareja, merece algún tipo de castigo.",
+  "Un hombre que está celoso con su esposa o pareja es porque esto demuestra que la ama.",
+  "Una mujer que se viste provocativamente y con ropa reveladora busca ser acosada sexualmente.",
+  "Una mujer infiel a su esposo o pareja debe tener algún tipo de castigo.",
+  "Una mujer siempre debe estar dispuesta a tener relaciones sexuales cuando su esposo o pareja lo desee."
+)
+
+
+tolerance_item_models <- 
+  lapply(X = attitude_items_m, 
+         FUN = function(outcome, adjusted = F) {
+           strata_FE <- c(
+             # paste0("strata_new_", 2:4, "_c"),
+             paste0("batch_", 2:5, "_c")
+           )
+           
+           y_covs <- y_selected$covariate[y_selected$outcome == "attitudes_m"]
+           # r_covs <- r_selected$covariate
+           # if (outcome == "arguments") {
+           #   r_covs <- NULL
+           # }
+           z_covs <- z_selected$covariate
+           covs <- unique(c(y_covs, z_covs, strata_FE))
+           
+           lm_robust(
+             reformulate(
+               termlabels = if (adjusted) {
+                 c("treatment", covs, paste0("treatment:", covs))
+               } else {
+                 c("treatment", strata_FE, paste0("treatment:", strata_FE))
+               },
+               response = paste0("I(", outcome, "> 1)"),
+             ),
+             #fixed_effects = ~factor(strata),
+             data = filter(rmc, id_status_w == 1 & strata_new %in% c(2,3)),
+             alpha = 0.10
+           )     
+         })
+
+tolerance_item_plot_data <- 
+  lapply(X = tolerance_item_models, FUN = tidy) %>% 
+  do.call(what = rbind, args = .) %>% 
+  filter(term == "treatment")
+
+tolerance_item_plot_data$outcome <- str_wrap(tolerance_item_descriptions, 20)
+
+tolerance_item_plot <- plot_coefs(
+  data = tolerance_item_plot_data
+) 
+
+ggsave(
+  filename = "7_figures/tolerance_item_plot.pdf",
+  plot = tolerance_item_plot,
+  device = "pdf",
+  width = 6,
+  height = 6
+)
+
+# make a table as well

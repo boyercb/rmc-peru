@@ -89,7 +89,68 @@ impl <-
   impl |>
   mutate(
     remained_in_chat = 
-      replace(1 - left_group, included == 0 | eliminated == 1, 0)
+      replace(1 - left_group, included == 0 | eliminated == 1, 0),
+    days_in_chat = 
+      ifelse(
+        remained_in_chat == 1,
+        30,
+        as.Date(left_group_day, "y-m-d") - as.Date(start_day_group, "y-m-d") + 1
+      ),
+    remained_in_chat_day1 = as.numeric(days_in_chat > 1),
+    remained_in_chat_day10 = as.numeric(days_in_chat > 10),
+    remained_in_chat_day15 = as.numeric(days_in_chat > 15),
+    remained_in_chat_day20 = as.numeric(days_in_chat > 20)
+  )
+
+# read message data
+messages <- read_stata(get_data("Intervention/Intervention_raw_all_messages.dta"))
+coded_messages <- read_dta(get_data("Intervention/raw_messages_identified.dta"))
+
+# drop facilitator messages 
+messages_fac <- filter(messages, type_actor == 2)
+messages <- filter(messages, type_actor != 2)
+
+# create day of intervention variable
+messages <- 
+  messages |>
+  group_by(batch, group) |>
+  mutate(day = date - first(date) + 1) 
+
+# drop messages after day 35
+messages <- 
+  messages |>
+  filter(day <= 35)
+
+# messages <-
+#   messages |>
+#   filter(str_length(message_complete) > 1)
+
+# calculate number of group messages per day and individual messages per day
+messages <- 
+  messages |>
+  group_by(batch, group, participant_id) |>
+  summarise(
+    msg_i = n(),
+    msg_comm_emo_reg_i = sum(day >= 2 & day <= 14),
+    msg_health_sex_i = sum(day >= 15 & day <= 22),
+    msg_finance_i = sum(day %in% c(23, 24, 27, 28)),
+    msg_life_home_i = sum(day %in% c(25, 26)),
+    .groups = "drop"
+  ) 
+
+coded_messages <- 
+  coded_messages |>
+  group_by(batch, group) |>
+  summarise(
+    problem_partner = sum(problem_partner, na.rm = TRUE),
+    challenge_beliefs = sum(challenge_beliefs, na.rm = TRUE),
+    participants_argue = sum(participants_argue, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    original_group = group,
+    group = (batch - 1) * 5 + group,
+    batch = as.character(batch)
   )
 
 

@@ -9,9 +9,7 @@ itt_violence <-
     function(outcome, adjusted) {
       strata_FE <- c(
         paste0("strata_new_", 2:4, "_c"),
-        paste0("batch_", 2:6, "_c")
-        # paste0("strata_new_2_c:batch_", 2:5, "_c"),
-        # paste0("strata_new_3_c:batch_", 2:5, "_c")
+        paste0("batch_", 2:5, "_c")
       )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
       # r_covs <- r_selected$covariate
@@ -39,7 +37,7 @@ itt_time_to_violence <-
     function(outcome, adjusted) {
       strata_FE <- c(
         paste0("strata_new_", 2:4, "_c"),
-        paste0("batch_", 2:6, "_c")
+        paste0("batch_", 2:5, "_c")
       )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
       # r_covs <- r_selected$covariate
@@ -67,7 +65,7 @@ itt_primary <-
     function(outcome, adjusted) {
       strata_FE <- c(
         paste0("strata_new_", 2:4, "_c"),
-        paste0("batch_", 2:6, "_c")
+        paste0("batch_", 2:5, "_c")
       )
       y_covs <- y_selected$covariate[y_selected$outcome == outcome]
       # r_covs <- r_selected$covariate

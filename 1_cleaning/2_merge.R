@@ -35,8 +35,24 @@ stopifnot(nrow(rand_to_merge) == 2710)
 # merge intervention ------------------------------------------------------
 
 impl_to_merge <- select(impl, -batch, -group)
-
 stopifnot(nrow(impl_to_merge) == 2710 / 2)
+
+messages_to_merge <-
+  select(messages,
+         participant_id,
+         msg_i,
+         msg_comm_emo_reg_i,
+         msg_health_sex_i,
+         msg_finance_i,
+         msg_life_home_i)
+
+coded_messages_to_merge <- 
+  select(coded_messages,
+         batch,
+         group,
+         problem_partner,
+         challenge_beliefs,
+         participants_argue)
 
 
 # merge endline -----------------------------------------------------------
@@ -54,8 +70,9 @@ rmc <-
   rand_to_merge |>
   left_join(el_to_merge, by = "participant_id") |>
   left_join(bl_to_merge, by = "participant_id") |>
-  left_join(impl_to_merge, by = "participant_id") 
-  
+  left_join(impl_to_merge, by = "participant_id") |> 
+  left_join(messages_to_merge, by = "participant_id") |>
+  left_join(coded_messages_to_merge, by = c("batch", "group"))
 
 # create useful sample indicators -----------------------------------------
 

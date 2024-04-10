@@ -40,7 +40,12 @@ names(itt_secondary) <-
     paste0("(", 1:4, ")"), 
     paste0("(", 1:4, ")"),
     paste0("(", 1:4, ")"),
-    paste0("(", 1:2, ")"))
+    paste0("(", 1:2, ")"),
+    paste0("(", 1:4, ")"),
+    paste0("(", 1:4, ")"),
+    paste0("(", 1:4, ")"),
+    paste0("(", 1:4, ")")
+    )
 
 make_report_table(
   models = itt_secondary[1:4],
@@ -113,6 +118,57 @@ make_report_table(
   save_kable(
     file = "6_tables/itt_ladder.tex"
   )
+
+make_report_table(
+  models = itt_secondary[c(23:24, 29:30)],
+  outcomes = secondary_outcomes[c(12,15)],
+  outcome_labels = secondary_labels[c(12, 15)],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on alternative communcation indices \\label{tab:itt_alt_comm}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_alt_comm.tex"
+  )
+
+
+make_report_table(
+  models = itt_secondary[25:28],
+  outcomes = secondary_outcomes[13:14],
+  outcome_labels = secondary_labels[13:14],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on communication questions only \\label{tab:itt_comm}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_comm.tex"
+  )
+
+
+make_report_table(
+  models = itt_secondary[31:34],
+  outcomes = secondary_outcomes[16:17],
+  outcome_labels = secondary_labels[16:17],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on arguments about sex \\label{tab:itt_arg_sex}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_arg_sex.tex"
+  )
+
+make_report_table(
+  models = itt_secondary[35:38],
+  outcomes = secondary_outcomes[18:19],
+  outcome_labels = secondary_labels[18:19],
+  treatment = "treatment",
+  title = "ITT estimates of effects of HEP on attitudes about sex \\label{tab:itt_sex_attitudes}",
+  data = rmc
+) |>
+  save_kable(
+    file = "6_tables/itt_sex_attitudes.tex"
+  )
+
 
 
 

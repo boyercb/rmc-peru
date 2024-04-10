@@ -2,15 +2,13 @@
 
 # select baseline covariates that predict response (r ~ x)
 r_selected <- postlasso(
-  covariates = 
-    bl_covariates[!str_detect(
-      bl_covariates, 
-      paste0("(", paste(time_invariant, collapse = ")|("), ")")
-    )],
+  covariates = lassocovs,
   outcome = "responded_w", 
   data = rmc,
-  # fixed_effects = paste0("strata_new_", 1:4)
-  logit = TRUE
+  fixed_effects = c(
+    paste0("strata_new_", 2:4, "_c"),
+    paste0("batch_", 2:5, "_c")
+  )
 )
 
 # fit model for inverse probability of response weights
@@ -20,11 +18,6 @@ response_weights <-
            y_covs <- y_selected$covariate[
              y_selected$outcome == x 
            ]
-           y_covs <- y_covs[!str_detect(
-             y_covs, 
-             paste0("(", paste(time_invariant, collapse = ")|("), ")")
-           )]
-           
            r_covs <- r_selected$covariate
            covs <- unique(c(y_covs, r_covs))
            

@@ -225,9 +225,13 @@ rmc <-
 rmc <-
   rmc |>
   mutate(
-    sex_consent_w = (4 - sex_consent_w) / 3,
-    sex_refuse_w = (sex_refuse_w - 1) / 3,
-    consent_index = (sex_consent_w + sex_refuse_w) / 2
+    sex_consent_w = (4 - sex_consent_w) / 3,#replace(sex_consent_w, is.na(sex_consent_w), 4)) / 3,
+    sex_refuse_w = (sex_refuse_w - 1) / 2,#(replace(sex_refuse_w, is.na(sex_refuse_w), 1) - 1) / 2,
+    consent_index = (sex_consent_w + sex_refuse_w) / 2,
+    arg_infidelity_m = conflicts5_m / 4,
+    arg_sex_m = conflicts6_m / 4,
+    dress_provocative_m = (4 - tolerance_vaw_3_m) / 4,
+    always_in_mood_m = (4 - tolerance_vaw_5_m) / 4
   )
 
 
@@ -266,11 +270,11 @@ rmc <-
     
     across(
       all_of(paste0("reaction", c(2, 3), "_w")),
-      function(x) x >= 3
+      function(x) x <= 1
     ),
     across(
       all_of(paste0("reaction", c(1, 5), "_w")),
-      function(x) x == 1
+      function(x) x >= 3
     ),
     # across(
     #   all_of(paste0("reaction", 1:5, "_w")), 
@@ -283,7 +287,27 @@ rmc <-
       communication9_w + communication10_w +
       communication11_w  + communication1_m + communication2_m +
       communication3_m + communication4_m + reaction1_w +
-      reaction2_w + reaction3_w + reaction5_w) / 19
+      reaction2_w + reaction3_w + reaction5_w) / 19,
+    
+    comm_index_w = (communication1_w + communication2_w +
+                      communication3_w + communication4_w +
+                      communication5_w + communication6_w + 
+                      communication7_w + communication8_w +
+                      communication9_w + communication10_w +
+                      communication11_w + reaction1_w + 
+                      reaction2_w + reaction3_w + reaction5_w) / 15,
+    
+    comm_w = (communication1_w + communication2_w +
+                communication3_w + communication4_w +
+                communication5_w + communication6_w + 
+                communication7_w + communication8_w +
+                communication9_w + communication10_w +
+                communication11_w) / 11,
+    
+    comm_m = (communication1_m + communication2_m +
+      communication3_m + communication4_m) / 4,
+    
+    emo_reg = (reaction1_w + reaction2_w + reaction3_w + reaction5_w) / 4
   )
 
 
@@ -311,7 +335,7 @@ rmc <-
   rmc |>
   mutate(
     across(
-      all_of(satisfaction_items), 
+      c(satisfaction1_m, satisfaction2_m, satisfaction1_w, satisfaction2_w), 
       function(x) 6 - x
     ),
     satisfaction_m = (satisfaction1_m + satisfaction3_m) / 12,
@@ -353,6 +377,12 @@ rmc <-
   )
 
 
+ rmc$tolerance_vaw_index <-
+   rmc |>
+   select(matches("tolerance_vaw_[1-5]_m$")) |>
+   mutate(across(everything(), function(x) as.numeric(x) %in% c(3, 4))) |>
+   rowSums()
+ 
 rmc <-
   rmc |>
   mutate(
@@ -407,6 +437,764 @@ rmc <-
   )
 
 
+# messages ----------------------------------------------------------------
+
+rmc <- 
+  rmc |>
+  mutate(across(starts_with("msg_"), ~replace(.x, is.na(.x), 0)))
+
+rmc <-
+  rmc |>
+  group_by(batch, group) |>
+  mutate(
+    msg_g = sum(msg_i, na.rm = TRUE) - msg_i,
+    msg_comm_emo_reg_g = sum(msg_comm_emo_reg_i, na.rm = TRUE) - msg_comm_emo_reg_i,
+    msg_health_sex_g = sum(msg_health_sex_i, na.rm = TRUE) - msg_health_sex_i,
+    msg_finance_g = sum(msg_finance_i, na.rm = TRUE) - msg_finance_i,
+    msg_life_home_g = sum(msg_life_home_i, na.rm = TRUE) - msg_life_home_i,
+    msg_other_g = msg_health_sex_g + msg_finance_g + msg_life_home_g,
+    
+    msg_g_v = sum(msg_i * any_ipv_bl, na.rm = TRUE) - msg_i * any_ipv_bl,
+    msg_comm_emo_reg_g_v = sum(msg_comm_emo_reg_i * any_ipv_bl, na.rm = TRUE) - msg_comm_emo_reg_i * any_ipv_bl,
+    msg_health_sex_g_v = sum(msg_health_sex_i * any_ipv_bl, na.rm = TRUE) - msg_health_sex_i * any_ipv_bl,
+    msg_finance_g_v = sum(msg_finance_i * any_ipv_bl, na.rm = TRUE) - msg_finance_i * any_ipv_bl,
+    msg_life_home_g_v = sum(msg_life_home_i * any_ipv_bl, na.rm = TRUE) - msg_life_home_i * any_ipv_bl,
+    msg_other_g_v = msg_health_sex_g_v + msg_finance_g_v + msg_life_home_g_v,
+    
+    msg_g_nv = sum(msg_i * (1 - any_ipv_bl), na.rm = TRUE) - msg_i * (1 - any_ipv_bl),
+    msg_comm_emo_reg_g_nv = sum(msg_comm_emo_reg_i * (1 - any_ipv_bl), na.rm = TRUE) - msg_comm_emo_reg_i * (1 - any_ipv_bl),
+    msg_health_sex_g_nv = sum(msg_health_sex_i * (1 - any_ipv_bl), na.rm = TRUE) - msg_health_sex_i * (1 - any_ipv_bl),
+    msg_finance_g_nv = sum(msg_finance_i * (1 - any_ipv_bl), na.rm = TRUE) - msg_finance_i * (1 - any_ipv_bl),
+    msg_life_home_g_nv = sum(msg_life_home_i * (1 - any_ipv_bl), na.rm = TRUE) - msg_life_home_i * (1 - any_ipv_bl),
+    msg_other_g_nv = msg_health_sex_g_nv + msg_finance_g_nv + msg_life_home_g_nv,
+    
+    msg_g_conf5 = sum(msg_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_comm_emo_reg_g_conf5 = sum(msg_comm_emo_reg_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_comm_emo_reg_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_health_sex_g_conf5 = sum(msg_health_sex_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_health_sex_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_finance_g_conf5 = sum(msg_finance_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_finance_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_life_home_g_conf5 = sum(msg_life_home_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_life_home_i * I(conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_other_g_conf5 = msg_health_sex_g_conf5 + msg_finance_g_conf5 + msg_life_home_g_conf5,
+    
+    msg_g_conf5_n = sum(msg_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_comm_emo_reg_g_conf5_n = sum(msg_comm_emo_reg_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_comm_emo_reg_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_health_sex_g_conf5_n = sum(msg_health_sex_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_health_sex_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_finance_g_conf5_n = sum(msg_finance_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_finance_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_life_home_g_conf5_n = sum(msg_life_home_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - msg_life_home_i * I(!conflicts5_m_bl %in% c(1, 2, 3, 4)),
+    msg_other_g_conf5_n = msg_health_sex_g_conf5_n + msg_finance_g_conf5_n + msg_life_home_g_conf5_n,
+  ) |> 
+  ungroup() |>
+  mutate(
+    msg_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_g - min(msg_g[treatment!=0])) / 
+        (max(msg_g) - min(msg_g[treatment!=0]))
+    ),
+    msg_comm_emo_reg_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_g - min(msg_comm_emo_reg_g[treatment!=0])) / 
+        (max(msg_comm_emo_reg_g) - min(msg_comm_emo_reg_g[treatment!=0]))
+    ),
+    msg_health_sex_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_g - min(msg_health_sex_g[treatment!=0])) / 
+        (max(msg_health_sex_g) - min(msg_health_sex_g[treatment!=0]))
+    ),
+    msg_finance_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_g - min(msg_finance_g[treatment!=0])) / 
+        (max(msg_finance_g) - min(msg_finance_g[treatment!=0]))
+    ),
+    msg_life_home_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_g - min(msg_life_home_g[treatment!=0])) / 
+        (max(msg_life_home_g) - min(msg_life_home_g[treatment!=0]))
+    ),
+    msg_other_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_g - min(msg_other_g[treatment!=0])) / 
+        (max(msg_other_g) - min(msg_other_g[treatment!=0]))
+    ),
+    msg_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_g_v - min(msg_g_v[treatment!=0], na.rm = T)) / 
+        (max(msg_g_v, na.rm = T) - min(msg_g_v[treatment!=0], na.rm = T))
+    ),
+    msg_comm_emo_reg_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_g_v - min(msg_comm_emo_reg_g_v[treatment!=0], na.rm = T)) / 
+        (max(msg_comm_emo_reg_g_v, na.rm = T) - min(msg_comm_emo_reg_g_v[treatment!=0], na.rm = T))
+    ),
+    msg_health_sex_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_g_v - min(msg_health_sex_g_v[treatment!=0], na.rm = T)) / 
+        (max(msg_health_sex_g_v, na.rm = T) - min(msg_health_sex_g_v[treatment!=0], na.rm = T))
+    ),
+    msg_finance_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_g_v - min(msg_finance_g_v[treatment!=0], na.rm = T)) / 
+        (max(msg_finance_g_v, na.rm = T) - min(msg_finance_g_v[treatment!=0], na.rm = T))
+    ),
+    msg_life_home_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_g_v - min(msg_life_home_g_v[treatment!=0], na.rm = T)) / 
+        (max(msg_life_home_g_v, na.rm = T) - min(msg_life_home_g_v[treatment!=0], na.rm = T))
+    ),
+    msg_other_g_v_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_g_v - min(msg_other_g_v[treatment!=0])) / 
+        (max(msg_other_g_v) - min(msg_other_g_v[treatment!=0]))
+    ),
+    msg_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_g_nv - min(msg_g_nv[treatment!=0], na.rm = T)) / 
+        (max(msg_g_nv, na.rm = T) - min(msg_g_nv[treatment!=0], na.rm = T))
+    ),
+    msg_comm_emo_reg_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_g_nv - min(msg_comm_emo_reg_g_nv[treatment!=0], na.rm = T)) / 
+        (max(msg_comm_emo_reg_g_nv, na.rm = T) - min(msg_comm_emo_reg_g_nv[treatment!=0], na.rm = T))
+    ),
+    msg_health_sex_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_g_nv - min(msg_health_sex_g_nv[treatment!=0], na.rm = T)) / 
+        (max(msg_health_sex_g_nv, na.rm = T) - min(msg_health_sex_g_nv[treatment!=0], na.rm = T))
+    ),
+    msg_finance_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_g_nv - min(msg_finance_g_nv[treatment!=0], na.rm = T)) / 
+        (max(msg_finance_g_nv, na.rm = T) - min(msg_finance_g_nv[treatment!=0], na.rm = T))
+    ),
+    msg_life_home_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_g_nv - min(msg_life_home_g_nv[treatment!=0], na.rm = T)) / 
+        (max(msg_life_home_g_nv, na.rm = T) - min(msg_life_home_g_nv[treatment!=0], na.rm = T))
+    ),
+    msg_other_g_nv_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_g_nv - min(msg_other_g_nv[treatment!=0])) / 
+        (max(msg_other_g_nv) - min(msg_other_g_nv[treatment!=0]))
+    ),
+    
+    msg_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_g_conf5 - min(msg_g_conf5[treatment!=0], na.rm = T)) / 
+        (max(msg_g_conf5, na.rm = T) - min(msg_g_conf5[treatment!=0], na.rm = T))
+    ),
+    msg_comm_emo_reg_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_g_conf5 - min(msg_comm_emo_reg_g_conf5[treatment!=0], na.rm = T)) / 
+        (max(msg_comm_emo_reg_g_conf5, na.rm = T) - min(msg_comm_emo_reg_g_conf5[treatment!=0], na.rm = T))
+    ),
+    msg_health_sex_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_g_conf5 - min(msg_health_sex_g_conf5[treatment!=0], na.rm = T)) / 
+        (max(msg_health_sex_g_conf5, na.rm = T) - min(msg_health_sex_g_conf5[treatment!=0], na.rm = T))
+    ),
+    msg_finance_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_g_conf5 - min(msg_finance_g_conf5[treatment!=0], na.rm = T)) / 
+        (max(msg_finance_g_conf5, na.rm = T) - min(msg_finance_g_conf5[treatment!=0], na.rm = T))
+    ),
+    msg_life_home_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_g_conf5 - min(msg_life_home_g_conf5[treatment!=0], na.rm = T)) / 
+        (max(msg_life_home_g_conf5, na.rm = T) - min(msg_life_home_g_conf5[treatment!=0], na.rm = T))
+    ),
+    msg_other_g_conf5_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_g_conf5 - min(msg_other_g_conf5[treatment!=0])) / 
+        (max(msg_other_g_conf5) - min(msg_other_g_conf5[treatment!=0]))
+    ),
+    
+    
+    msg_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_g_conf5_n - min(msg_g_conf5_n[treatment!=0], na.rm = T)) / 
+        (max(msg_g_conf5_n, na.rm = T) - min(msg_g_conf5_n[treatment!=0], na.rm = T))
+    ),
+    msg_comm_emo_reg_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_g_conf5_n - min(msg_comm_emo_reg_g_conf5_n[treatment!=0], na.rm = T)) / 
+        (max(msg_comm_emo_reg_g_conf5_n, na.rm = T) - min(msg_comm_emo_reg_g_conf5_n[treatment!=0], na.rm = T))
+    ),
+    msg_health_sex_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_g_conf5_n - min(msg_health_sex_g_conf5_n[treatment!=0], na.rm = T)) / 
+        (max(msg_health_sex_g_conf5_n, na.rm = T) - min(msg_health_sex_g_conf5_n[treatment!=0], na.rm = T))
+    ),
+    msg_finance_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_g_conf5_n - min(msg_finance_g_conf5_n[treatment!=0], na.rm = T)) / 
+        (max(msg_finance_g_conf5_n, na.rm = T) - min(msg_finance_g_conf5_n[treatment!=0], na.rm = T))
+    ),
+    msg_life_home_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_g_conf5_n - min(msg_life_home_g_conf5_n[treatment!=0], na.rm = T)) / 
+        (max(msg_life_home_g_conf5_n, na.rm = T) - min(msg_life_home_g_conf5_n[treatment!=0], na.rm = T))
+    ),
+    msg_other_g_conf5_n_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_g_conf5_n - min(msg_other_g_conf5_n[treatment!=0])) / 
+        (max(msg_other_g_conf5_n) - min(msg_other_g_conf5_n[treatment!=0]))
+    ),
+    
+    
+    msg_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_g + 1)
+    ),
+    msg_comm_emo_reg_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_comm_emo_reg_g + 1)
+    ),
+    msg_health_sex_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_health_sex_g + 1)
+    ),
+    msg_finance_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_finance_g + 1)
+    ),
+    msg_life_home_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_life_home_g + 1)
+    ),
+    msg_other_g_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_other_g + 1)
+    ),
+    msg_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_g_v + 1)
+    ),
+    msg_comm_emo_reg_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_comm_emo_reg_g_v + 1)
+    ),
+    msg_health_sex_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_health_sex_g_v + 1)
+    ),
+    msg_finance_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_finance_g_v + 1)
+    ),
+    msg_life_home_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_life_home_g_v + 1)
+    ),
+    msg_other_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_other_g_v + 1)
+    ),
+    msg_g_nv_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_g_nv + 1)
+    ),
+    msg_comm_emo_reg_g_nv_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_comm_emo_reg_g_nv + 1)
+    ),
+    msg_health_sex_g_nv_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_health_sex_g_nv + 1)
+    ),
+    msg_finance_g_nv_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_finance_g_nv + 1)
+    ),
+    msg_life_home_g_nv_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_life_home_g_nv + 1)
+    ),
+    msg_other_g_v_log = ifelse(
+      treatment==0, 
+      0, 
+      log(msg_other_g_nv + 1)
+    ),
+    msg_g_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_g <= max(replace(msg_g, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_comm_emo_reg_g_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_comm_emo_reg_g <= max(replace(msg_comm_emo_reg_g, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_health_sex_g_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_health_sex_g <= max(replace(msg_health_sex_g, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_finance_g_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_finance_g <= max(replace(msg_finance_g, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_life_home_g_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_life_home_g <= max(replace(msg_life_home_g, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_g_v_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_g_v <= max(replace(msg_g_v, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_comm_emo_reg_g_v_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_comm_emo_reg_g_v <= max(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_health_sex_g_v_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_health_sex_g_v <= max(replace(msg_health_sex_g_v, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_finance_g_v_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_finance_g_v <= max(replace(msg_finance_g_v, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_life_home_g_v_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_life_home_g_v <= max(replace(msg_life_home_g_v, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_g_nv_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_g_nv <= max(replace(msg_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_comm_emo_reg_g_nv_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_comm_emo_reg_g_nv <= max(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_health_sex_g_nv_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_health_sex_g_nv <= max(replace(msg_health_sex_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_finance_g_nv_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_finance_g_nv <= max(replace(msg_finance_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_life_home_g_nv_q5 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      msg_life_home_g_nv <= max(replace(msg_life_home_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    msg_g_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_g <= quantile(replace(msg_g, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_g <= max(replace(msg_g, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_comm_emo_reg_g_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g <= quantile(replace(msg_comm_emo_reg_g, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g <= max(replace(msg_comm_emo_reg_g, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_health_sex_g_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_health_sex_g <= quantile(replace(msg_health_sex_g, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_health_sex_g <= max(replace(msg_health_sex_g, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_finance_g_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_finance_g <= quantile(replace(msg_finance_g, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_finance_g <= max(replace(msg_finance_g, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_life_home_g_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_life_home_g <= quantile(replace(msg_life_home_g, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_life_home_g <= max(replace(msg_life_home_g, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_g_v_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_g_v <= quantile(replace(msg_g_v, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_g_v <= max(replace(msg_g_v, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_comm_emo_reg_g_v_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g_v <= quantile(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g_v <= max(replace(msg_comm_emo_reg_g_v, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_health_sex_g_v_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_health_sex_g_v <= quantile(replace(msg_health_sex_g_v, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_health_sex_g_v <= max(replace(msg_health_sex_g_v, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_finance_g_v_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_finance_g_v <= quantile(replace(msg_finance_g_v, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_finance_g_v <= max(replace(msg_finance_g_v, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_life_home_g_v_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_life_home_g_v <= quantile(replace(msg_life_home_g_v, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_life_home_g_v <= max(replace(msg_life_home_g_v, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_g_nv_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_g_nv <= quantile(replace(msg_g_nv, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_g_nv <= max(replace(msg_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_comm_emo_reg_g_nv_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_comm_emo_reg_g_nv <= quantile(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_comm_emo_reg_g_nv <= max(replace(msg_comm_emo_reg_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_health_sex_g_nv_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_health_sex_g_nv <= quantile(replace(msg_health_sex_g_nv, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_health_sex_g_nv <= max(replace(msg_health_sex_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_finance_g_nv_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_finance_g_nv <= quantile(replace(msg_finance_g_nv, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_finance_g_nv <= max(replace(msg_finance_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    msg_life_home_g_nv_q3 = case_when(
+      treatment == 0 ~ 0,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      msg_life_home_g_nv <= quantile(replace(msg_life_home_g_nv, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      msg_life_home_g_nv <= max(replace(msg_life_home_g_nv, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+  ) 
+
+rmc <- 
+  rmc |>
+  group_by(group) |>
+  mutate(
+    rmc_violent_prop = (sum(any_ipv_bl, na.rm = TRUE) - any_ipv_bl) / (n() - 1),
+    rmc_physical_prop = (sum(any_physical_bl, na.rm = TRUE) - any_physical_bl) / (n() - 1),
+    rmc_sexual_prop = (sum(any_sexual_bl, na.rm = TRUE) - any_sexual_bl) / (n() - 1),
+    rmc_educ_prop = (sum(I(education_w_bl >= 6), na.rm = TRUE) - I(education_w_bl >= 6)) / n(),
+    rmc_conf5_prop = (sum(I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - I(conflicts5_m_bl %in% c(1, 2, 3, 4))) / n(),
+    rmc_att_index_prop = (sum(tolerance_vaw_index_bl, na.rm = TRUE) - tolerance_vaw_index_bl) / (n() - 1),
+    rmc_att_any_prop = (sum(tolerance_vaw_index_bl > 0, na.rm = TRUE) - I(tolerance_vaw_index_bl > 0)) / (n() - 1),
+    rmc_att4_prop = (sum(I(tolerance_vaw_4_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_4_m_bl %in% c(3, 4))) / n(),
+    rmc_att2_prop = (sum(I(tolerance_vaw_2_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_2_m_bl %in% c(3, 4))) / n(),
+    rmc_att1_prop = (sum(I(tolerance_vaw_1_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_1_m_bl %in% c(3, 4))) / n(),
+    rmc_react2_prop = (sum(I(reaction2_w_bl %in% c(2, 3, 4)), na.rm = TRUE) - I(reaction2_w_bl %in% c(2, 3, 4))) / n(),
+    rmc_alcohol_prop = (sum(I(alcohol_man_w_bl > 1), na.rm = TRUE) - I(alcohol_man_w_bl > 1)) / n(),
+    rmc_socialmedia_prop = (sum(I(sample_pi_m_bl == 1), na.rm = TRUE) - I(sample_pi_m_bl == 1)) / n()
+  ) |>
+  ungroup() |>
+  mutate(
+    rmc_violent_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_violent_prop - min(rmc_violent_prop)) / 
+        (max(rmc_violent_prop) - min(rmc_violent_prop))
+    ),
+    rmc_physical_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_physical_prop - min(rmc_physical_prop)) / 
+        (max(rmc_physical_prop) - min(rmc_physical_prop))
+    ),
+    rmc_sexual_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_sexual_prop - min(rmc_sexual_prop)) / 
+        (max(rmc_sexual_prop) - min(rmc_sexual_prop))
+    ),
+    rmc_educ_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_educ_prop - min(rmc_educ_prop, na.rm = TRUE)) / 
+        (max(rmc_educ_prop, na.rm = TRUE) - min(rmc_educ_prop, na.rm = TRUE))
+    ),
+    rmc_conf5_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_conf5_prop - min(rmc_conf5_prop)) / 
+        (max(rmc_conf5_prop) - min(rmc_conf5_prop))
+    ),
+    rmc_att_any_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_att_any_prop - min(rmc_att_any_prop)) / 
+        (max(rmc_att_any_prop) - min(rmc_att_any_prop))
+    ),
+    rmc_att_index_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_att_index_prop - min(rmc_att_index_prop)) / 
+        (max(rmc_att_index_prop) - min(rmc_att_index_prop))
+    ),
+    rmc_att4_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_att4_prop - min(rmc_att4_prop)) / 
+        (max(rmc_att4_prop) - min(rmc_att4_prop))
+    ),
+    rmc_att2_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_att2_prop - min(rmc_att2_prop)) / 
+        (max(rmc_att2_prop) - min(rmc_att2_prop))
+    ),
+    rmc_att1_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_att1_prop - min(rmc_att1_prop)) / 
+        (max(rmc_att1_prop) - min(rmc_att1_prop))
+    ),
+    rmc_react2_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_react2_prop - min(rmc_react2_prop, na.rm = TRUE)) / 
+        (max(rmc_react2_prop, na.rm = TRUE) - min(rmc_react2_prop, na.rm = TRUE))
+    ),
+    rmc_alcohol_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_alcohol_prop - min(rmc_alcohol_prop, na.rm = TRUE)) / 
+        (max(rmc_alcohol_prop, na.rm = TRUE) - min(rmc_alcohol_prop, na.rm = TRUE))
+    ),
+    rmc_socialmedia_prop_std = ifelse(
+      treatment==0, 
+      0, 
+      (rmc_socialmedia_prop - min(rmc_socialmedia_prop)) / 
+        (max(rmc_socialmedia_prop) - min(rmc_socialmedia_prop))
+    ),
+    rmc_violent_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_violent_prop <= max(replace(rmc_violent_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_physical_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_physical_prop <= max(replace(rmc_physical_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_sexual_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_sexual_prop <= max(replace(rmc_sexual_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_educ_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_educ_prop <= max(replace(rmc_educ_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_att4_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_att4_prop <= max(replace(rmc_att4_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_att2_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_att2_prop <= max(replace(rmc_att2_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_att1_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_att1_prop <= max(replace(rmc_att1_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_react2_prop_q5 = case_when(
+      treatment == 0 ~ 0,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 0.2, na.rm = TRUE) ~ 1,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 0.4, na.rm = TRUE) ~ 2,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 0.6, na.rm = TRUE) ~ 3,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 0.8, na.rm = TRUE) ~ 4,
+      rmc_react2_prop <= max(replace(rmc_react2_prop, treatment == 0, NA), na.rm = TRUE) ~ 5,
+    ),
+    rmc_violent_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_violent_prop <= quantile(replace(rmc_violent_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_violent_prop <= max(replace(rmc_violent_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_physical_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_physical_prop <= quantile(replace(rmc_physical_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_physical_prop <= max(replace(rmc_physical_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_sexual_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_sexual_prop <= quantile(replace(rmc_sexual_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_sexual_prop <= max(replace(rmc_sexual_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_educ_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_educ_prop <= quantile(replace(rmc_educ_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_educ_prop <= max(replace(rmc_educ_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_att4_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_att4_prop <= quantile(replace(rmc_att4_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_att4_prop <= max(replace(rmc_att4_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_att2_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_att2_prop <= quantile(replace(rmc_att2_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_att2_prop <= max(replace(rmc_att2_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_att1_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_att1_prop <= quantile(replace(rmc_att1_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_att1_prop <= max(replace(rmc_att1_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    ),
+    rmc_react2_prop_q3 = case_when(
+      treatment == 0 ~ 0,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 1/3, na.rm = TRUE) ~ 1,
+      rmc_react2_prop <= quantile(replace(rmc_react2_prop, treatment == 0, NA), 2/3, na.rm = TRUE) ~ 2,
+      rmc_react2_prop <= max(replace(rmc_react2_prop, treatment == 0, NA), na.rm = TRUE) ~ 3,
+    )
+  )
+
+rmc <- 
+  rmc |>
+  mutate(
+    problem_partner = ifelse(treatment == 0, 0, problem_partner),
+    challenge_beliefs = ifelse(treatment == 0, 0, challenge_beliefs),
+    participants_argue = ifelse(treatment == 0, 0, participants_argue),
+    problem_partner_prop = problem_partner / msg_g,
+    challenge_beliefs_prop = challenge_beliefs / msg_g,
+    participants_argue_prop = participants_argue / msg_g
+  )
+
+
 # baseline propensity for violence ----------------------------------------
 
 prognostic_model_control_covs <- 
@@ -428,7 +1216,7 @@ prognostic_model_control <- glm(
 
 prognostic_model_covs <- 
   postlasso(
-    covariates = bl_covariates[!str_detect(bl_covariates, "ipv([7-9]|10|11|12)_w_bl")],
+    covariates = bl_covariates[!str_detect(bl_covariates, "ipv([7-9]|10|11|12)_w_bl") & !bl_covariates %in% c("any_ipv_bl_c", "any_physical_bl_c", "any_psychological_bl_c")],
     outcome = "any_ipv_bl", 
     data = rmc,
     logit = TRUE
@@ -452,7 +1240,8 @@ rmc <-
                          type = "response"),
     p_violence_bl = predict(prognostic_model,
                             newdata = rmc,
-                            type = "response")
+                            type = "response"),
+    p_violence_bl_c = scale(p_violence_bl, scale = FALSE)
   )
 
 

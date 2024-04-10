@@ -55,7 +55,7 @@ source("3_itt/3_item_plots.R")
 
 source("3_itt/4_subgroups_ipv.R")
 
-source("3_itt/5_subgroups.R")
+source("3_itt/5_subgroups_other.R")
 
 source("3_itt/6_subgroup_plots.R")
 

@@ -118,7 +118,15 @@ secondary_outcomes <- c(
   "attitudes_w",
   "depression_m",
   "alcohol_man_w",
-  "ladder1_w"
+  "ladder1_w",
+  "comm_index_w",
+  "comm_w",
+  "comm_m",
+  "emo_reg",
+  "arg_infidelity_m",
+  "arg_sex_m",
+  "dress_provocative_m",
+  "always_in_mood_m"
 )
 
 secondary_labels <- c(
@@ -132,7 +140,15 @@ secondary_labels <- c(
   "Gender attitudes (W)",
   "Depression (M)",
   "Man's alcohol use (W)",
-  "Decision-making power (W)"
+  "Decision-making power (W)", 
+  "Comm. Index (W)",
+  "Comm. (W)",
+  "Comm. (M)",
+  "Emo. Reg. (W)",
+  "Arg. Infidelity (M)",
+  "Arg. Sex (M)",
+  "Provocative (M)",
+  "Always willing (M)"
 )
 
 demand_outcomes <- c(

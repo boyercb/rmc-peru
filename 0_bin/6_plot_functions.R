@@ -17,7 +17,7 @@ rmc_theme <- 	function() {
 
 
 # function to create nice plot
-plot_coefs <- function(data, facets = NULL, levels = NULL, subgroups = NULL) {
+plot_coefs <- function(data, facets = NULL, levels = NULL, subgroups = NULL, xlabel = "\nTreatment effect estimate") {
   
   unique_outcomes <- length(unique(data$outcome))
   
@@ -108,7 +108,7 @@ plot_coefs <- function(data, facets = NULL, levels = NULL, subgroups = NULL) {
   p + 
     coord_flip() +
     labs(
-      y = "\nTreatment effect estimate",
+      y = xlabel,
       x = NULL
     ) +
     rmc_theme() +
