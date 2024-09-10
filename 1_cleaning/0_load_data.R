@@ -140,18 +140,25 @@ messages <-
 
 coded_messages <- 
   coded_messages |>
-  group_by(batch, group) |>
+  group_by(batch, group, participant_id) |>
   summarise(
-    problem_partner = sum(problem_partner, na.rm = TRUE),
-    challenge_beliefs = sum(challenge_beliefs, na.rm = TRUE),
-    participants_argue = sum(participants_argue, na.rm = TRUE),
+    problem_partner_i = sum(problem_partner, na.rm = TRUE),
+    challenge_beliefs_i = sum(challenge_beliefs, na.rm = TRUE),
+    participants_argue_i = sum(participants_argue, na.rm = TRUE),
     .groups = "drop"
+  ) |>
+  group_by(batch, group) |>
+  mutate(
+    problem_partner_g = sum(problem_partner_i, na.rm = TRUE),
+    challenge_beliefs_g = sum(challenge_beliefs_i, na.rm = TRUE),
+    participants_argue_g = sum(participants_argue_i, na.rm = TRUE)
   ) |>
   mutate(
     original_group = group,
     group = (batch - 1) * 5 + group,
     batch = as.character(batch)
-  )
+  ) |>
+  ungroup()
 
 
 # endline -----------------------------------------------------------------

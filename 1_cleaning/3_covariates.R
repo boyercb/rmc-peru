@@ -137,11 +137,14 @@ rmc <-
 
 rmc <-
   rmc |>
-  mutate(attitudes_w_bl = (
-    12 - (
-       gem3_w_bl + gem5_w_bl + gem7_w_bl 
-    )
-  ) / 12)
+  mutate(
+    attitudes_w_bl = (12 - (gem3_w_bl + gem5_w_bl + gem7_w_bl )) / 12,
+    tolerance_vaw_index_w_bl = 
+      (gem3_w_bl %in% c(3, 4)) + 
+      (gem5_w_bl %in% c(3, 4)) + 
+      (gem7_w_bl %in% c(3, 4)),
+    tolerance_vaw_any_w_bl = as.numeric(tolerance_vaw_index_w_bl > 0)
+  )
 
 
 # tolerance of violence at baseline index
@@ -151,6 +154,8 @@ rmc$tolerance_vaw_index_bl <-
   mutate(across(everything(), function(x) as.numeric(x) %in% c(3, 4))) |>
   rowSums()
 
+rmc$tolerance_vaw_any_bl <- 
+  as.numeric(rmc$tolerance_vaw_index_bl > 0)
 
 rmc <- 
   rmc |>

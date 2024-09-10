@@ -48,11 +48,13 @@ messages_to_merge <-
 
 coded_messages_to_merge <- 
   select(coded_messages,
-         batch,
-         group,
-         problem_partner,
-         challenge_beliefs,
-         participants_argue)
+         participant_id,
+         problem_partner_i,
+         challenge_beliefs_i,
+         participants_argue_i,
+         problem_partner_g,
+         challenge_beliefs_g,
+         participants_argue_g)
 
 
 # merge endline -----------------------------------------------------------
@@ -72,7 +74,7 @@ rmc <-
   left_join(bl_to_merge, by = "participant_id") |>
   left_join(impl_to_merge, by = "participant_id") |> 
   left_join(messages_to_merge, by = "participant_id") |>
-  left_join(coded_messages_to_merge, by = c("batch", "group"))
+  left_join(coded_messages_to_merge, by = c("participant_id"))
 
 # create useful sample indicators -----------------------------------------
 

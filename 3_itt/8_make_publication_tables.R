@@ -402,7 +402,7 @@ ms |> save_kable(
 
 mods <- c(
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -417,7 +417,7 @@ mods <- c(
     }
   ),
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -432,7 +432,7 @@ mods <- c(
     }
   ),
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -447,7 +447,7 @@ mods <- c(
     }
   ),
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -469,7 +469,7 @@ mods <- c(
     }
   ),
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -489,7 +489,7 @@ mods <- c(
     }
   ),
   lapply(
-    c("any_physical", "any_sexual"),
+    c("any_physical", "any_sexual", "tolerance_vaw_index"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -510,6 +510,41 @@ mods <- c(
   )
 )
 
+fit <- lm_robust(
+  formula = reformulate(
+    termlabels = c("treatment",
+                   "treatment:rmc_att_any_prop", 
+                   "I(tolerance_vaw_index_bl > 0)",
+                   "treatment:I(tolerance_vaw_index_bl > 0)",
+                   "treatment:rmc_att_any_prop:I(tolerance_vaw_index_bl > 0)",
+                   paste0("batch_", 2:5, "_c"),
+                   paste0("strata_new_", 2:4, "_c")),
+    response = "any_sexual"
+  ),
+  data = subset(rmc, id_status_w == 1)
+)
+
+p <- plot_comparisons(
+  fit,
+  variables = list(treatment = 1),
+  condition = list("rmc_att_any_prop", "tolerance_vaw_index_bl" = 0:1)
+) +
+  labs(x = "Proportion of men justifying any violence at baseline (group-level)",
+       y = "Effect of HEP on sexual violence") +
+  scale_color_discrete(name = "", labels = c("No justification", "Any justification")) +
+  scale_fill_discrete(name = "", labels = c("No justification", "Any justification")) +
+  scale_y_continuous(n.breaks = 8) +
+  theme_classic() +
+  theme(legend.position = "top")
+
+ggsave(
+  filename = "HEP-manuscript/figures/effect_by_comp_any.pdf",
+  plot = p,
+  device = "pdf",
+  width = 6.5,
+  height = 5
+)
+
 dep_var_means <- 
   sapply(mods, function(x) {
     out <- x$outcome
@@ -520,7 +555,7 @@ dep_var_means <-
 rows <- tibble(
   sample = c("Full", "No just.", "Any just.", "Full", "No just.", "Any just."),
   FE = rep("Yes", 6),
-  dep_var_mean = paste0("{", specd(dep_var_means[c(2, 4, 6, 8, 10, 12)], 3), "}"),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(2, 5, 8, 11, 14, 17)], 3), "}"),
 )
 
 rows <- as_tibble(t(rows))
@@ -536,11 +571,11 @@ ms <-
   modelsummary(
     models = c(
       mods[2],
-      mods[4],
-      mods[6],
+      mods[5],
       mods[8],
-      mods[10],
-      mods[12]
+      mods[11],
+      mods[14],
+      mods[17]
     ),
     output = 'latex',
     statistic = c('({std.error})'),
@@ -558,18 +593,17 @@ ms <-
     gof_omit = "(AIC)|(BIC)|(RMSE)",
     add_rows = rows,
     align = paste0('l', str_flatten(rep('d', 6))),
-    title = "Effects on sexual violence by group compostion",
+    title = "Effects on sexual violence by group composition.\\label{tab:group_comp_sexual}",
     gof_map = gm,
     escape = FALSE
   )
 
 ms <- ms |>
-  kable_styling(font_size = 10) 
-  # add_header_above(c(
-  #   " " = 1,
-  #   "Any Physical" = 3,
-  #   "Any Sexual" = 3
-  # ), escape = FALSE)
+  kable_styling(font_size = 10) |>
+  add_header_above(c(
+    " " = 1,
+    "Any Sexual" = 6
+  ), escape = FALSE)
 
 ms <- ms |>
   footnote(
@@ -592,7 +626,7 @@ ms |> save_kable(
 rows <- tibble(
   sample = c("Full", "No IPV", "Any IPV", "Full", "No just.", "Any just."),
   FE = rep("Yes", 6),
-  dep_var_mean = paste0("{", specd(dep_var_means[c(1, 3, 5, 7, 9, 11)], 3), "}"),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(1, 4, 7, 10, 13, 16)], 3), "}"),
 )
 
 rows <- as_tibble(t(rows))
@@ -608,11 +642,11 @@ ms <-
   modelsummary(
     models = c(
       mods[1],
-      mods[3],
-      mods[5],
+      mods[4],
       mods[7],
-      mods[9],
-      mods[11]
+      mods[10],
+      mods[13],
+      mods[16]
     ),
     output = 'latex',
     statistic = c('({std.error})'),
@@ -630,18 +664,17 @@ ms <-
     gof_omit = "(AIC)|(BIC)|(RMSE)",
     add_rows = rows,
     align = paste0('l', str_flatten(rep('d', 6))),
-    title = "Effects on physical violence by group compostion",
+    title = "Effects on physical violence by group composition. \\label{tab:group_comp_physical}",
     gof_map = gm,
     escape = FALSE
   )
 
 ms <- ms |>
-  kable_styling(font_size = 10) 
-# add_header_above(c(
-#   " " = 1,
-#   "Any Physical" = 3,
-#   "Any Sexual" = 3
-# ), escape = FALSE)
+  kable_styling(font_size = 10) |>
+  add_header_above(c(
+    " " = 1,
+    "Any Physical" = 6
+  ), escape = FALSE)
 
 ms <- ms |>
   footnote(
@@ -661,6 +694,74 @@ ms |> save_kable(
   file = paste0("HEP-manuscript/tables/table4a.tex")
 )
 
+
+rows <- tibble(
+  sample = c("Full", "No just.", "Any just."),
+  FE = rep("Yes", 3),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(3, 6, 9)], 3), "}"),
+)
+
+rows <- as_tibble(t(rows))
+rows <- add_column(rows, c("Sample", "Fixed Effects", "Control Mean"), .before = 1)
+attr(rows, 'position') <- c(4, 5, 6)
+
+gm <- tribble(
+  ~raw,        ~clean,      ~fmt,
+  "nobs", "Observations", function(x) paste0("{", x, "}")
+)
+
+ms <- 
+  modelsummary(
+    models = c(
+      mods[3],
+      mods[6],
+      mods[9]
+    ),
+    output = 'latex',
+    statistic = c('({std.error})'),
+    coef_map = c(
+      "treatment" = "HEP",
+      "I(tolerance_vaw_index_bl > 0)TRUE" = "just. index (ind.)",
+      # "tolerance_vaw_index_bl" = "just. index (ind.)",
+      "treatment:I(tolerance_vaw_index_bl > 0)TRUE" = "HEP $\\times$ just. index (ind.)",
+      # "treatment:tolerance_vaw_index_bl" = "HEP $\\times$ just. index (ind.)",
+      "treatment:rmc_att_index_prop_std" = "HEP $\\times$ just. index (group)",
+      "treatment:rmc_sexual_prop_std" = "HEP $\\times$ \\% sexual violence (group)",
+      "treatment:rmc_physical_prop_std" = "HEP $\\times$ \\% physical violence (group)"
+    ),
+    stars = c('*' = .1, '**' = .05, '***' = .01),
+    gof_omit = "(AIC)|(BIC)|(RMSE)",
+    add_rows = rows,
+    align = paste0('l', str_flatten(rep('d', 3))),
+    title = "Effects on justification of violence by group composition.\\label{tab:group_comp_just}",
+    gof_map = gm,
+    escape = FALSE
+  )
+
+ms <- ms |>
+  kable_styling(font_size = 10) |>
+  add_header_above(c(
+    " " = 1,
+    "Justification Index" = 3
+  ), escape = FALSE)
+
+ms <- ms |>
+  footnote(
+    symbol = "* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01",
+    symbol_manual = "",
+    general_title = "",
+    threeparttable = TRUE,
+    escape = FALSE
+  )
+
+ms <- gsub(" \\{\\}", " ", ms)
+ms <- gsub("\\multicolumn{3}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{5}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{7}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms |> save_kable(
+  file = paste0("HEP-manuscript/tables/group_comp_just.tex")
+)
 
 
 # mechanisms --------------------------------------------------------------
@@ -914,21 +1015,23 @@ ms |> save_kable(
 )
 
 
+
 mods <- c(
   lapply(
-    c("problem_partner", "challenge_beliefs", "participants_argue"),
+    c("problem_partner_g", "challenge_beliefs_g", "participants_argue_g"),
     function(x) {
       lm_robust(
         formula = reformulate(
           termlabels = c("rmc_att_index_prop_std"),
           response = x
         ),
-        data = subset(rmc, treatment == 1)
+        data = subset(rmc, treatment == 1),
+        clusters = group
       )
     }
   ),
   lapply(
-    c("problem_partner", "challenge_beliefs", "participants_argue"),
+    c("problem_partner_g", "challenge_beliefs_g", "participants_argue_g"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -936,7 +1039,8 @@ mods <- c(
                          paste0("batch_", 2:6, "_c")),
           response = x
         ),
-        data = subset(rmc, treatment == 1)
+        data = subset(rmc, treatment == 1),
+        clusters = group
       )
     }
   ),
@@ -948,7 +1052,8 @@ mods <- c(
           termlabels = c("rmc_att_index_prop_std"),
           response = x
         ),
-        data = subset(rmc, treatment == 1)
+        data = subset(rmc, treatment == 1),
+        clusters = group
       )
     }
   ),
@@ -961,24 +1066,26 @@ mods <- c(
                          paste0("batch_", 2:6, "_c")),
           response = x
         ),
-        data = subset(rmc, treatment == 1)
+        data = subset(rmc, treatment == 1),
+        clusters = group
       )
     }
   )
 )
 
-# dep_var_means <- 
-#   sapply(mods, function(x) {
-#     mean(rmc[[x$outcome]][rmc$treatment == 1])
-#   })
+dep_var_means <-
+  sapply(mods, function(x) {
+    mean(rmc[[x$outcome]][rmc$treatment == 1])
+  })
 
 rows <- tibble(
-  FE = rep(c("No", "Yes"), 3)
+  FE = rep(c("No", "Yes"), 3),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(1,4,2,5,3,6)], 2), "}")
 )
 
 rows <- as_tibble(t(rows))
-rows <- add_column(rows, c("Fixed Effects"), .before = 1)
-attr(rows, 'position') <- c(5, 6)
+rows <- add_column(rows, c("Fixed Effects", "Control Mean"), .before = 1)
+attr(rows, 'position') <- c(3, 4)
 
 gm <- tribble(
   ~raw,        ~clean,      ~fmt,
@@ -998,14 +1105,215 @@ ms <-
     output = 'latex',
     statistic = c('({std.error})'),
     coef_map = c(
-      "(Intercept)" = "(Intercept)",
+      # "(Intercept)" = "(Intercept)",
       "rmc_att_index_prop_std" = "just. index (group)"
     ),
     stars = c('*' = .1, '**' = .05, '***' = .01),
     gof_omit = "(AIC)|(BIC)|(RMSE)",
     add_rows = rows,
     align = paste0('l', str_flatten(rep('d', 6))),
-    title = "Potential mechanisms for effect of group composition.",
+    title = "Potential mechanisms for effect of group composition.\\label{tab:mechanisms}",
+    gof_map = gm,
+    escape = FALSE
+  )
+
+ms <- ms |>
+  kable_styling() |>
+  add_header_above(c(
+    " " = 1,
+    "Share challenges (\\\\%)" = 2,
+    "Helpful feedback (\\\\%)" = 2,
+    "Group conflict (\\\\%)" = 2
+  ), escape = FALSE)
+
+ms <- ms |>
+  footnote(
+    symbol = "* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01",
+    symbol_manual = "",
+    general_title = "",
+    threeparttable = TRUE,
+    escape = FALSE
+  )
+
+ms <- gsub(" \\{\\}", " ", ms)
+ms <- gsub("\\multicolumn{3}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{5}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{7}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms |> save_kable(
+  file = paste0("HEP-manuscript/tables/mechanism1.tex")
+)
+
+
+rows <- tibble(
+  FE = rep(c("No", "Yes"), 3),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(7,10,8,11,9,12)], 2), "}")
+)
+
+rows <- as_tibble(t(rows))
+rows <- add_column(rows, c("Fixed Effects", "Control Mean"), .before = 1)
+attr(rows, 'position') <- c(3, 4)
+
+gm <- tribble(
+  ~raw,        ~clean,      ~fmt,
+  "nobs", "Observations", function(x) paste0("{", x, "}")
+)
+
+ms <- 
+  modelsummary(
+    models = c(
+      mods[7],
+      mods[10],
+      mods[8],
+      mods[11],
+      mods[9],
+      mods[12]
+    ),
+    output = 'latex',
+    statistic = c('({std.error})'),
+    coef_map = c(
+      # "(Intercept)" = "(Intercept)",
+      "rmc_att_index_prop_std" = "just. index (group)"
+    ),
+    stars = c('*' = .1, '**' = .05, '***' = .01),
+    gof_omit = "(AIC)|(BIC)|(RMSE)",
+    add_rows = rows,
+    align = paste0('l', str_flatten(rep('d', 6))),
+    title = "Potential mechanisms for effect of group composition.\\label{tab:mechanisms}",
+    gof_map = gm,
+    escape = FALSE
+  )
+
+ms <- ms |>
+  kable_styling() |>
+  add_header_above(c(
+    " " = 1,
+    "Share challenges (\\\\%)" = 2,
+    "Helpful feedback (\\\\%)" = 2,
+    "Group conflict (\\\\%)" = 2
+  ), escape = FALSE)
+
+ms <- ms |>
+  footnote(
+    symbol = "* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01",
+    symbol_manual = "",
+    general_title = "",
+    threeparttable = TRUE,
+    escape = FALSE
+  )
+
+ms <- gsub(" \\{\\}", " ", ms)
+ms <- gsub("\\multicolumn{3}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{5}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{7}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
+ms |> save_kable(
+  file = paste0("HEP-manuscript/tables/mechanism2.tex")
+)
+
+
+
+
+# -------------------------------------------------------------------------
+
+
+mods <- c(
+  lapply(
+    c("problem_partner_g", "challenge_beliefs_g", "participants_argue_g"),
+    function(x) {
+      lm_robust(
+        formula = reformulate(
+          termlabels = c("rmc_homogeneity_prop"),
+          response = x
+        ),
+        data = subset(rmc, treatment == 1),
+        clusters = group
+      )
+    }
+  ),
+  lapply(
+    c("problem_partner_g", "challenge_beliefs_g", "participants_argue_g"),
+    function(x) {
+      lm_robust(
+        formula = reformulate(
+          termlabels = c("rmc_homogeneity_prop",
+                         paste0("batch_", 2:6, "_c")),
+          response = x
+        ),
+        data = subset(rmc, treatment == 1),
+        clusters = group
+      )
+    }
+  ),
+  lapply(
+    c("problem_partner_prop", "challenge_beliefs_prop", "participants_argue_prop"),
+    function(x) {
+      lm_robust(
+        formula = reformulate(
+          termlabels = c("rmc_homogeneity_prop"),
+          response = x
+        ),
+        data = subset(rmc, treatment == 1),
+        clusters = group
+      )
+    }
+  ),
+  lapply(
+    c("problem_partner_prop", "challenge_beliefs_prop", "participants_argue_prop"),
+    function(x) {
+      lm_robust(
+        formula = reformulate(
+          termlabels = c("rmc_homogeneity_prop",
+                         paste0("batch_", 2:6, "_c")),
+          response = x
+        ),
+        data = subset(rmc, treatment == 1),
+        clusters = group
+      )
+    }
+  )
+)
+
+dep_var_means <-
+  sapply(mods, function(x) {
+    mean(rmc[[x$outcome]][rmc$treatment == 1])
+  })
+
+rows <- tibble(
+  FE = rep(c("No", "Yes"), 3),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(1,4,2,5,3,6)], 2), "}")
+)
+
+rows <- as_tibble(t(rows))
+rows <- add_column(rows, c("Fixed Effects", "Control Mean"), .before = 1)
+attr(rows, 'position') <- c(3, 4)
+
+gm <- tribble(
+  ~raw,        ~clean,      ~fmt,
+  "nobs", "Observations", function(x) paste0("{", x, "}")
+)
+
+ms <- 
+  modelsummary(
+    models = c(
+      mods[1],
+      mods[4],
+      mods[2],
+      mods[5],
+      mods[3],
+      mods[6]
+    ),
+    output = 'latex',
+    statistic = c('({std.error})'),
+    coef_map = c(
+      # "(Intercept)" = "(Intercept)",
+      "rmc_homogeneity_prop" = "homogeneity (group)"
+    ),
+    stars = c('*' = .1, '**' = .05, '***' = .01),
+    gof_omit = "(AIC)|(BIC)|(RMSE)",
+    add_rows = rows,
+    align = paste0('l', str_flatten(rep('d', 6))),
+    title = "Effect of group homogeneity.\\label{tab:homogeneity}",
     gof_map = gm,
     escape = FALSE
   )
@@ -1034,17 +1342,18 @@ ms <- gsub("\\multicolumn{5}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** 
 ms <- gsub("\\multicolumn{7}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
 ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
 ms |> save_kable(
-  file = paste0("HEP-manuscript/tables/jp1.tex")
+  file = paste0("HEP-manuscript/tables/homogeneity1.tex")
 )
 
 
 rows <- tibble(
-  FE = rep(c("No", "Yes"), 3)
+  FE = rep(c("No", "Yes"), 3),
+  dep_var_mean = paste0("{", specd(dep_var_means[c(7,10,8,11,9,12)], 2), "}")
 )
 
 rows <- as_tibble(t(rows))
-rows <- add_column(rows, c("Fixed Effects"), .before = 1)
-attr(rows, 'position') <- c(5, 6)
+rows <- add_column(rows, c("Fixed Effects", "Control Mean"), .before = 1)
+attr(rows, 'position') <- c(3, 4)
 
 gm <- tribble(
   ~raw,        ~clean,      ~fmt,
@@ -1064,14 +1373,14 @@ ms <-
     output = 'latex',
     statistic = c('({std.error})'),
     coef_map = c(
-      "(Intercept)" = "(Intercept)",
-      "rmc_att_index_prop_std" = "just. index (group)"
+      # "(Intercept)" = "(Intercept)",
+      "rmc_homogeneity_prop" = "homogeneity (group)"
     ),
     stars = c('*' = .1, '**' = .05, '***' = .01),
     gof_omit = "(AIC)|(BIC)|(RMSE)",
     add_rows = rows,
     align = paste0('l', str_flatten(rep('d', 6))),
-    title = "Potential mechanisms for effect of group composition.",
+    title = "Effect of group homogeneity.\\label{tab:homogeneity}",
     gof_map = gm,
     escape = FALSE
   )
@@ -1100,10 +1409,8 @@ ms <- gsub("\\multicolumn{5}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** 
 ms <- gsub("\\multicolumn{7}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
 ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\\\", "", ms, fixed = TRUE)
 ms |> save_kable(
-  file = paste0("HEP-manuscript/tables/jp2.tex")
+  file = paste0("HEP-manuscript/tables/homogeneity2.tex")
 )
-
-
 
 
 ggplot(subset(rmc, treatment == 1),
@@ -1111,11 +1418,65 @@ ggplot(subset(rmc, treatment == 1),
   geom_point()
 
 
+geom_smooth()
+p1 <- ggplot(subset(rmc, treatment == 1 & tolerance_vaw_index_bl > 0),
+         # group_by(group) |> 
+         # summarise(
+         #   rmc_att_any_prop = mean(rmc_att_any_prop),
+         #   participants_argue_prop = mean(participants_argue_prop)
+         #   ),
+       aes(x = rmc_att_any_prop,
+           y = remained_in_chat)) +
+  geom_smooth(method = "loess", fill = "lightblue") +
+  geom_hline(aes(yintercept = mean(remained_in_chat, na.rm = TRUE)), linetype = "dashed") +
+  theme_classic() +
+  labs(x = "Proportion of group justifying any violence", 
+       y = "Probability of remaining in chat\n(Men justifying any violence)")
 
-ggplot(subset(rmc, treatment == 1),
-       aes(x = rmc_att_index_prop_std, y = participants_argue_prop)) + 
-  geom_smooth() +
+p2 <- ggplot(subset(rmc, treatment == 1),
+       # group_by(group) |> 
+       # summarise(
+       #   rmc_att_any_prop = mean(rmc_att_any_prop),
+       #   participants_argue_prop = mean(participants_argue_prop)
+       #   ),
+       aes(x = rmc_att_any_prop, y = participants_argue_i)) + 
+  geom_smooth(method = "loess", fill = "lightblue") +
   geom_hline(yintercept = 0, linetype = "dashed") +
   theme_classic() +
-  labs(x = "Justification index (group)", 
-       y = "Participants argue (%)")
+  labs(x = "Proportion of group justifying any violence", 
+       y = "Probability of arguing or threaten to leave group")
+
+ggsave(
+  filename = "HEP-manuscript/figures/mechanism_plot.pdf",
+  plot = p1 + p2,
+  device = "pdf",
+  width = 10,
+  height = 5
+)
+
+
+
+
+
+
+ggplot(subset(rmc, treatment == 1) |>
+       group_by(group) |>
+       summarise(
+         rmc_att_any_prop = mean(rmc_att_any_prop),
+         problem_partner_prop = mean(problem_partner_prop)
+         ),
+       aes(x = rmc_att_any_prop, y = problem_partner_prop * 100)) + 
+  geom_smooth(method = "loess", fill = "lightblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic() +
+  labs(x = "Proportion of group justifying any violence", 
+       y = "Participants argue or threaten to leave group \n(rate per 100 messages)")
+
+
+ggplot(subset(rmc, treatment == 1),
+       aes(x = rmc_att_any_prop, y = challenge_beliefs_prop * 100)) + 
+  geom_smooth(method = "gam", fill = "lightblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_classic() +
+  labs(x = "Proportion of group justifying any violence", 
+       y = "Participants argue or threaten to leave group \n(rate per 100 messages)")

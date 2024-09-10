@@ -1,12 +1,13 @@
 balance_covariates_men <- c(
   "Man's age" = "age_m_bl",
   "Man has some post-secondary education" =  "I(education_w_bl >= 5)",
-  "Years together (reported by man)" = "years_relationship_m_bl",
+  "Years together (m)" = "years_relationship_m_bl",
   "Man is employed" = "he_works_m_bl",
   "Man uses WhatsApp daily" = "I(whatsapp_freq_m_bl == 1)",
   "Man was recruited via social media" =  "I(sample_pi_m_bl == 1)",
-  "Conflict index (reported by man)" = "arguments_m_bl",
-  "Justification of violence (reported by man)" = "tolerance_vaw_index_bl",
+  "Conflict index (m)" = "arguments_m_bl",
+  "Any justification of violence (m)" = "tolerance_vaw_any_bl",
+  "Justification of violence index (m)" = "tolerance_vaw_index_bl",
   "Man's father was violent" = "I(violence_parents_m_bl > 1)"
 )
 
@@ -16,16 +17,17 @@ balance_covariates_women <- c(
   "Woman has some post-secondary education" = "I(education_w_bl >= 5)",
   "Household size" = "hh_members_w_bl",
   "Woman is employed" = "she_works_w_bl",
-  "Man drinks alcohol (reported by woman)" = "I(alcohol_man_w_bl > 1)",
-  "Decision-making power (reported by woman)" = "ladder1_w_bl",
-  "Control index (reported by woman)" = "control_index_bl",
-  "Communication index (reported by woman)" = "comm_w_bl",
-  "Perceived control over sex (reported by woman)" = "consent_index_bl",
-  "Men's ability to self-regulate (reported by woman)" = "emo_reg_w_bl",
-  "Justification of violence (reported by woman)" = "attitudes_w_bl",
-  "Any psychological violence (reported by woman)" = "any_psychological_bl",
-  "Any physical violence (reported by woman)" ="any_physical_bl",
-  "Any sexual violence (reported by woman)" = "any_sexual_bl"
+  "Man drinks alcohol (w)" = "I(alcohol_man_w_bl > 1)",
+  "Decision-making power (w)" = "ladder1_w_bl",
+  "Control index (w)" = "control_index_bl",
+  "Communication index (w)" = "comm_w_bl",
+  "Perceived control over sex (w)" = "consent_index_bl",
+  "Men's ability to self-regulate (w)" = "emo_reg_w_bl",
+  "Any justification of violence (w)" = "tolerance_vaw_any_w_bl",
+  "Justification of violence index (w)" = "tolerance_vaw_index_w_bl",
+  "Any psychological violence (w)" = "any_psychological_bl",
+  "Any physical violence (w)" ="any_physical_bl",
+  "Any sexual violence (w)" = "any_sexual_bl"
 )
 
 balance_covariates <-
@@ -42,9 +44,11 @@ balance_covariates <-
     balance_covariates_women[5:10],
     balance_covariates_men[7],
     balance_covariates_women[11],
+    balance_covariates_women[12],
     balance_covariates_men[8],
-    balance_covariates_women[12:14],
-    balance_covariates_men[9])
+    balance_covariates_men[9],
+    balance_covariates_women[13:15],
+    balance_covariates_men[10])
 
 balance_regs <-
   lapply(balance_covariates,
@@ -71,11 +75,20 @@ balance_regs <-
              lm_robust(
                formula = reformulate(
                  termlabels = if (x %in% balance_covariates_women) {
-                   c(
-                     "treatment",
-                     paste0("strata_new_", 2:3, "_c"),
-                     paste0("batch_", 2:5, "_c")
-                   )
+                   if (x %in% c("any_physical_bl", "any_sexual_bl")) {
+                     c(
+                       "treatment",
+                       paste0("strata_new_", 3, "_c"),
+                       paste0("batch_", 2:5, "_c")
+                     )
+                   } else {
+                     c(
+                       "treatment",
+                       paste0("strata_new_", 2:3, "_c"),
+                       paste0("batch_", 2:5, "_c")
+                     )
+                   }
+                   
                  } else {
                    c(
                      "treatment",
@@ -111,7 +124,9 @@ balance_table <-
       id == 2 ~ "treatment",
       id == 3 ~ "diff"
     ),
-    value = ifelse(name == "estimate", as.character(specd(value, 2)), paste0("(", specd(value, 3), ")")),
+    value = ifelse(name == "estimate",
+                   ifelse(id == "diff", as.character(specd(value, 3)), as.character(specd(value, 3))),
+                   paste0("(", specd(value, 3), ")")),
     df = replace(df, name == "std.error", NA),
     outcome = rep(names(balance_covariates), each = 6)
     ) |>
@@ -165,8 +180,11 @@ kable(
   save_kable("HEP-manuscript/tables/balance.tex")
 
 recruit_covariates <- c(balance_covariates_women[11],
+                        balance_covariates_women[12],
                         balance_covariates_men[8],
-                        balance_covariates_women[12:14])
+                        balance_covariates_men[9],
+                        balance_covariates_men[7],
+                        balance_covariates_women[13:15])
 recruit_regs <-
   lapply(recruit_covariates,
        function(x) {
@@ -238,7 +256,7 @@ recruit_table <-
       id == 2 ~ "MIMP",
       id == 3 ~ "RDD"
     ),
-    value = ifelse(name == "estimate", as.character(specd(value, 2)), paste0("(", specd(value, 3), ")")),
+    value = ifelse(name == "estimate", as.character(specd(value, 3)), paste0("(", specd(value, 3), ")")),
     df = replace(df, name == "std.error", NA),
     outcome = rep(names(recruit_covariates), each = 6)
   ) |>

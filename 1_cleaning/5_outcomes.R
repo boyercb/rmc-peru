@@ -982,6 +982,8 @@ rmc <-
     rmc_conf5_prop = (sum(I(conflicts5_m_bl %in% c(1, 2, 3, 4)), na.rm = TRUE) - I(conflicts5_m_bl %in% c(1, 2, 3, 4))) / n(),
     rmc_att_index_prop = (sum(tolerance_vaw_index_bl, na.rm = TRUE) - tolerance_vaw_index_bl) / (n() - 1),
     rmc_att_any_prop = (sum(tolerance_vaw_index_bl > 0, na.rm = TRUE) - I(tolerance_vaw_index_bl > 0)) / (n() - 1),
+    rmc_homogeneity_prop = abs(rmc_att_any_prop - 0.5),
+    rmc_homogeneity_prop2 = (rmc_att_any_prop - 0.5)^2,
     rmc_att4_prop = (sum(I(tolerance_vaw_4_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_4_m_bl %in% c(3, 4))) / n(),
     rmc_att2_prop = (sum(I(tolerance_vaw_2_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_2_m_bl %in% c(3, 4))) / n(),
     rmc_att1_prop = (sum(I(tolerance_vaw_1_m_bl %in% c(3, 4)), na.rm = TRUE) - I(tolerance_vaw_1_m_bl %in% c(3, 4))) / n(),
@@ -1186,13 +1188,27 @@ rmc <-
 rmc <- 
   rmc |>
   mutate(
-    problem_partner = ifelse(treatment == 0, 0, problem_partner),
-    challenge_beliefs = ifelse(treatment == 0, 0, challenge_beliefs),
-    participants_argue = ifelse(treatment == 0, 0, participants_argue),
-    problem_partner_prop = problem_partner / msg_g,
-    challenge_beliefs_prop = challenge_beliefs / msg_g,
-    participants_argue_prop = participants_argue / msg_g
-  )
+    problem_partner_i = replace(problem_partner_i, treatment == 0 |
+                                  is.na(problem_partner_i), 0),
+    challenge_beliefs_i = replace(challenge_beliefs_i, treatment == 0 |
+                                    is.na(challenge_beliefs_i), 0),
+    participants_argue_i = replace(participants_argue_i, treatment == 0 |
+                                     is.na(participants_argue_i), 0)
+  ) |>
+  group_by(group) |>
+  mutate(
+    problem_partner_g = replace(problem_partner_g, treatment == 0, 0),
+    challenge_beliefs_g = replace(challenge_beliefs_g, treatment == 0, 0),
+    participants_argue_g = replace(participants_argue_g, treatment == 0, 0),
+    problem_partner_g = replace(problem_partner_g, is.na(problem_partner_g), mean(problem_partner_g, na.rm = TRUE)),
+    challenge_beliefs_g = replace(challenge_beliefs_g, is.na(challenge_beliefs_g), mean(challenge_beliefs_g, na.rm = TRUE)),
+    participants_argue_g = replace(participants_argue_g, is.na(participants_argue_g), mean(participants_argue_g, na.rm = TRUE)),
+    problem_partner_prop = problem_partner_g / msg_g,#sum(msg_i),
+    challenge_beliefs_prop = challenge_beliefs_g / msg_g,#sum(msg_i),
+    participants_argue_prop = participants_argue_g / msg_g,#sum(msg_i)
+  ) |>
+  ungroup() 
+  
 
 
 # baseline propensity for violence ----------------------------------------
