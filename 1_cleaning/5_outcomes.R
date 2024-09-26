@@ -1206,8 +1206,51 @@ rmc <-
     problem_partner_prop = problem_partner_g / msg_g,#sum(msg_i),
     challenge_beliefs_prop = challenge_beliefs_g / msg_g,#sum(msg_i),
     participants_argue_prop = participants_argue_g / msg_g,#sum(msg_i)
+    
+    participation_exercise_rev_g = replace(participation_exercise_rev_g, treatment == 0, 0),
+    program_reinforce_rev_g = replace(program_reinforce_rev_g, treatment == 0, 0),
+    program_challenge_rev_g = replace(program_challenge_rev_g, treatment == 0, 0),
+    problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, treatment == 0, 0),
+    problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, treatment == 0, 0),
+    give_advice_rev_g = replace(give_advice_rev_g, treatment == 0, 0),
+    challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, treatment == 0, 0),
+    fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, treatment == 0, 0),
+    argument_aggresive_rev_g = replace(argument_aggresive_rev_g, treatment == 0, 0),
+    program_engagement_rev_g = replace(program_engagement_rev_g, treatment == 0, 0),
+    share_problem_rev_g = replace(share_problem_rev_g, treatment == 0, 0),
+    react_problem_rev_g = replace(react_problem_rev_g, treatment == 0, 0),
+    any_code_rev_g = replace(any_code_rev_g, treatment == 0, 0),
+    
+    participation_exercise_rev_g = replace(participation_exercise_rev_g, is.na(participation_exercise_rev_g), mean(participation_exercise_rev_g, na.rm = TRUE)),
+    program_reinforce_rev_g = replace(program_reinforce_rev_g, is.na(program_reinforce_rev_g), mean(program_reinforce_rev_g, na.rm = TRUE)),
+    program_challenge_rev_g = replace(program_challenge_rev_g, is.na(program_challenge_rev_g), mean(program_challenge_rev_g, na.rm = TRUE)),
+    problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, is.na(problem_partner_detail_rev_g), mean(problem_partner_detail_rev_g, na.rm = TRUE)),
+    problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, is.na(problem_partner_acknowledge_rev_g), mean(problem_partner_acknowledge_rev_g, na.rm = TRUE)),
+    give_advice_rev_g = replace(give_advice_rev_g, is.na(give_advice_rev_g), mean(give_advice_rev_g, na.rm = TRUE)),
+    challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, is.na(challenge_beliefs_rev_g), mean(challenge_beliefs_rev_g, na.rm = TRUE)),
+    fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, is.na(fac_challenge_beliefs_rev_g), mean(fac_challenge_beliefs_rev_g, na.rm = TRUE)),
+    argument_aggresive_rev_g = replace(argument_aggresive_rev_g, is.na(argument_aggresive_rev_g), mean(argument_aggresive_rev_g, na.rm = TRUE)),
+    program_engagement_rev_g = replace(program_engagement_rev_g, is.na(program_engagement_rev_g), mean(program_engagement_rev_g, na.rm = TRUE)),
+    share_problem_rev_g = replace(share_problem_rev_g, is.na(share_problem_rev_g), mean(share_problem_rev_g, na.rm = TRUE)),
+    react_problem_rev_g = replace(react_problem_rev_g, is.na(react_problem_rev_g), mean(react_problem_rev_g, na.rm = TRUE)),
+    any_code_rev_g = replace(any_code_rev_g, is.na(any_code_rev_g), mean(any_code_rev_g, na.rm = TRUE)),
+    
+    participation_exercise_rev_prop = participation_exercise_rev_g / msg_g,
+    program_reinforce_rev_prop = program_reinforce_rev_g / msg_g,
+    program_challenge_rev_prop = program_challenge_rev_g / msg_g,
+    problem_partner_detail_rev_prop = problem_partner_detail_rev_g / msg_g,
+    problem_partner_acknowledge_rev_prop = problem_partner_acknowledge_rev_g / msg_g,
+    give_advice_rev_prop = give_advice_rev_g / msg_g,
+    challenge_beliefs_rev_prop = challenge_beliefs_rev_g / msg_g,
+    fac_challenge_beliefs_rev_prop = fac_challenge_beliefs_rev_g / msg_g,
+    argument_aggresive_rev_prop = argument_aggresive_rev_g / msg_g,
+    program_engagement_rev_prop = program_engagement_rev_g / msg_g,
+    share_problem_rev_prop = share_problem_rev_g / msg_g,
+    react_problem_rev_prop = react_problem_rev_g / msg_g,
+    any_code_rev_prop = any_code_rev_g / msg_g
   ) |>
   ungroup() 
+
   
 
 
@@ -1259,6 +1302,11 @@ rmc <-
                             type = "response"),
     p_violence_bl_c = scale(p_violence_bl, scale = FALSE)
   )
+
+
+# add group-level to covariate set ----------------------------------------
+
+
 
 
 

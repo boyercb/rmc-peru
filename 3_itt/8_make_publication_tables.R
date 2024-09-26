@@ -513,10 +513,10 @@ mods <- c(
 fit <- lm_robust(
   formula = reformulate(
     termlabels = c("treatment",
-                   "treatment:rmc_att_any_prop", 
+                   "treatment:ns(rmc_att_any_prop, 3)", 
                    "I(tolerance_vaw_index_bl > 0)",
                    "treatment:I(tolerance_vaw_index_bl > 0)",
-                   "treatment:rmc_att_any_prop:I(tolerance_vaw_index_bl > 0)",
+                   "treatment:ns(rmc_att_any_prop, 3):I(tolerance_vaw_index_bl > 0)",
                    paste0("batch_", 2:5, "_c"),
                    paste0("strata_new_", 2:4, "_c")),
     response = "any_sexual"
@@ -524,7 +524,7 @@ fit <- lm_robust(
   data = subset(rmc, id_status_w == 1)
 )
 
-p <- plot_comparisons(
+p <- marginaleffects::plot_comparisons(
   fit,
   variables = list(treatment = 1),
   condition = list("rmc_att_any_prop", "tolerance_vaw_index_bl" = 0:1)
@@ -538,7 +538,7 @@ p <- plot_comparisons(
   theme(legend.position = "top")
 
 ggsave(
-  filename = "HEP-manuscript/figures/effect_by_comp_any.pdf",
+  filename = "HEP-manuscript/figures/effect_by_comp_any_np.pdf",
   plot = p,
   device = "pdf",
   width = 6.5,

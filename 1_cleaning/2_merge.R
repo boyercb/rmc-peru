@@ -32,6 +32,17 @@ rand_to_merge <- filter(rand, !(participant_id == "1773" & batch == "3"))
 stopifnot(nrow(rand_to_merge) == 2710)
 
 
+# another person was randomized to batch 2 group 4, but was physically 
+# assigned to batch 2 group 5. Here, we change his group to 5 to reflect
+# the group he actually participated in. Because randomization occurred in two 
+# stages (first to T/C then to group among T) this does not violate ITT for T 
+# vs. C. It is for the second randomization to group. However, we feel that it 
+# is important that his group-level values reflect the group he actually 
+# participated in as all this happened without his knowledge and appears to be
+# completely accidental.
+rand_to_merge$group[rand_to_merge$participant_id == 15] <- 10
+
+
 # merge intervention ------------------------------------------------------
 
 impl_to_merge <- select(impl, -batch, -group)
@@ -56,6 +67,36 @@ coded_messages_to_merge <-
          challenge_beliefs_g,
          participants_argue_g)
 
+recoded_messages_to_merge <- 
+  select(recoded_messages,
+         participant_id,
+         participation_exercise_rev_i,
+         program_reinforce_rev_i,
+         program_challenge_rev_i,
+         problem_partner_detail_rev_i,
+         problem_partner_acknowledge_rev_i,
+         give_advice_rev_i,
+         challenge_beliefs_rev_i,
+         fac_challenge_beliefs_rev_i,
+         argument_aggresive_rev_i,
+         program_engagement_rev_i,
+         share_problem_rev_i,
+         react_problem_rev_i,
+         any_code_rev_i,
+         participation_exercise_rev_g,
+         program_reinforce_rev_g,
+         program_challenge_rev_g,
+         problem_partner_detail_rev_g,
+         problem_partner_acknowledge_rev_g,
+         give_advice_rev_g,
+         challenge_beliefs_rev_g,
+         fac_challenge_beliefs_rev_g,
+         argument_aggresive_rev_g,
+         program_engagement_rev_g,
+         share_problem_rev_g,
+         react_problem_rev_g,
+         any_code_rev_g)
+
 
 # merge endline -----------------------------------------------------------
 
@@ -74,7 +115,9 @@ rmc <-
   left_join(bl_to_merge, by = "participant_id") |>
   left_join(impl_to_merge, by = "participant_id") |> 
   left_join(messages_to_merge, by = "participant_id") |>
-  left_join(coded_messages_to_merge, by = c("participant_id"))
+  left_join(coded_messages_to_merge, by = c("participant_id")) |>
+  left_join(recoded_messages_to_merge, by = c("participant_id"))
+
 
 # create useful sample indicators -----------------------------------------
 

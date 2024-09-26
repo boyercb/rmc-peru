@@ -1,4 +1,16 @@
 
+# TODO:
+# [x] fix group randomization issue identified by JP and re-run results
+# - re-estimate tables 9-10 with new coding that JP sent
+# -NOT add group composition variables to lasso: 
+# [x] create figure plotting facilitator and group-level effects
+# - we should make Figure 3 analogous to Figure 4. 
+#   Can you add (for now, for comparison), a version of Figure 4 that shows 
+#   non-parametric relationship between sexual violence (rather than remain in 
+#   the chat) and proportion of men who justify violence?
+# 
+# - Add both key regressors in Tables 6 & 7 (justification index value and proportion any just) match the x-axis variable in Figures 3 and 4 
+
 
 # packages and functions --------------------------------------------------
 
@@ -58,6 +70,21 @@ source("3_itt/4_subgroups_ipv.R")
 source("3_itt/5_subgroups_other.R")
 
 source("3_itt/6_subgroup_plots.R")
+
+source("3_itt/7_group_level_exposures.R")
+
+source("3_itt/8_make_publication_tables.R")
+
+
+# new analysis ------------------------------------------------------------
+
+source("3_itt/fac_heterogeneity_1.R")
+
+source("3_itt/fac_heterogeneity_2.R")
+
+source("3_itt/coded_message_histograms.R")
+
+source("3_itt/coded_messages_mechanisms_table.R")
 
 
 # compliance --------------------------------------------------------------

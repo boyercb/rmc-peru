@@ -105,7 +105,8 @@ impl <-
 # read message data
 messages <- read_stata(get_data("Intervention/Intervention_raw_all_messages.dta"))
 coded_messages <- read_dta(get_data("Intervention/raw_messages_identified.dta"))
-
+recoded_messages <- read_dta(get_data("Intervention/revised_codes_messaged.dta"))
+  
 # drop facilitator messages 
 messages_fac <- filter(messages, type_actor == 2)
 messages <- filter(messages, type_actor != 2)
@@ -140,7 +141,7 @@ messages <-
 
 coded_messages <- 
   coded_messages |>
-  group_by(batch, group, participant_id) |>
+  group_by(batch, group, type_actor, participant_id) |>
   summarise(
     problem_partner_i = sum(problem_partner, na.rm = TRUE),
     challenge_beliefs_i = sum(challenge_beliefs, na.rm = TRUE),
@@ -158,7 +159,67 @@ coded_messages <-
     group = (batch - 1) * 5 + group,
     batch = as.character(batch)
   ) |>
-  ungroup()
+  ungroup() |>
+  filter(type_actor != "Facilitator")
+
+recoded_messages <- 
+  recoded_messages |>
+  group_by(batch, group, type_actor, participant_id) |>
+  summarise(
+    participation_exercise_rev_i = sum(participation_exercise_rev, na.rm = TRUE),
+    program_reinforce_rev_i = sum(program_reinforce_rev, na.rm = TRUE),
+    program_challenge_rev_i = sum(program_challenge_rev, na.rm = TRUE),
+    problem_partner_detail_rev_i = sum(problem_partner_detail_rev, na.rm = TRUE),
+    problem_partner_acknowledge_rev_i = sum(problem_partner_acknowledge_rev, na.rm = TRUE),
+    give_advice_rev_i = sum(give_advice_rev, na.rm = TRUE),
+    challenge_beliefs_rev_i = sum(challenge_beliefs_rev, na.rm = TRUE),
+    fac_challenge_beliefs_rev_i = sum(fac_challenge_beliefs_rev, na.rm = TRUE),
+    argument_aggresive_rev_i = sum(argument_aggresive_rev, na.rm = TRUE),
+    program_engagement_rev_i = sum(program_engagement_rev, na.rm = TRUE),
+    share_problem_rev_i = sum(share_problem_rev, na.rm = TRUE),
+    react_problem_rev_i = sum(react_problem_rev, na.rm = TRUE),
+    any_code_rev_i = sum(any_code_rev, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  group_by(batch, group) |>
+  mutate(
+    participation_exercise_rev_g = sum(participation_exercise_rev_i, na.rm = TRUE),
+    program_reinforce_rev_g = sum(program_reinforce_rev_i, na.rm = TRUE),
+    program_challenge_rev_g = sum(program_challenge_rev_i, na.rm = TRUE),
+    problem_partner_detail_rev_g = sum(problem_partner_detail_rev_i, na.rm = TRUE),
+    problem_partner_acknowledge_rev_g = sum(problem_partner_acknowledge_rev_i, na.rm = TRUE),
+    give_advice_rev_g = sum(give_advice_rev_i, na.rm = TRUE),
+    challenge_beliefs_rev_g = sum(challenge_beliefs_rev_i, na.rm = TRUE),
+    fac_challenge_beliefs_rev_g = sum(fac_challenge_beliefs_rev_i, na.rm = TRUE),
+    argument_aggresive_rev_g = sum(argument_aggresive_rev_i, na.rm = TRUE),
+    program_engagement_rev_g = sum(program_engagement_rev_i, na.rm = TRUE),
+    share_problem_rev_g = sum(share_problem_rev_i, na.rm = TRUE),
+    react_problem_rev_g = sum(react_problem_rev_i, na.rm = TRUE),
+    any_code_rev_g = sum(any_code_rev_i, na.rm = TRUE),
+    
+    react_problem_rev_g = react_problem_rev_g - argument_aggresive_rev_g
+  ) |>
+  mutate(
+    original_group = group,
+    group = (batch - 1) * 5 + group,
+    batch = as.character(batch)
+  ) |>
+  ungroup() |>
+  filter(type_actor != "Facilitator")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # endline -----------------------------------------------------------------
