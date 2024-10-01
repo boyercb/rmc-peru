@@ -1219,6 +1219,7 @@ rmc <-
     program_engagement_rev_g = replace(program_engagement_rev_g, treatment == 0, 0),
     share_problem_rev_g = replace(share_problem_rev_g, treatment == 0, 0),
     react_problem_rev_g = replace(react_problem_rev_g, treatment == 0, 0),
+    jpr_incite_conflict_g = replace(jpr_incite_conflict_g, treatment == 0, 0),
     any_code_rev_g = replace(any_code_rev_g, treatment == 0, 0),
     
     participation_exercise_rev_g = replace(participation_exercise_rev_g, is.na(participation_exercise_rev_g), mean(participation_exercise_rev_g, na.rm = TRUE)),
@@ -1233,6 +1234,7 @@ rmc <-
     program_engagement_rev_g = replace(program_engagement_rev_g, is.na(program_engagement_rev_g), mean(program_engagement_rev_g, na.rm = TRUE)),
     share_problem_rev_g = replace(share_problem_rev_g, is.na(share_problem_rev_g), mean(share_problem_rev_g, na.rm = TRUE)),
     react_problem_rev_g = replace(react_problem_rev_g, is.na(react_problem_rev_g), mean(react_problem_rev_g, na.rm = TRUE)),
+    jpr_incite_conflict_g = replace(jpr_incite_conflict_g, is.na(jpr_incite_conflict_g), mean(jpr_incite_conflict_g, na.rm = TRUE)),
     any_code_rev_g = replace(any_code_rev_g, is.na(any_code_rev_g), mean(any_code_rev_g, na.rm = TRUE)),
     
     participation_exercise_rev_prop = participation_exercise_rev_g / msg_g,
@@ -1247,6 +1249,7 @@ rmc <-
     program_engagement_rev_prop = program_engagement_rev_g / msg_g,
     share_problem_rev_prop = share_problem_rev_g / msg_g,
     react_problem_rev_prop = react_problem_rev_g / msg_g,
+    jpr_incite_conflict_prop = jpr_incite_conflict_g / msg_g,
     any_code_rev_prop = any_code_rev_g / msg_g
   ) |>
   ungroup() 

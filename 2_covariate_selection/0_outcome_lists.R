@@ -188,3 +188,22 @@ attrition_outcomes <- c(
   "responded_m",
   "responded_w"
 )
+
+
+coded_outcomes <- c(
+  "any_code_rev_g",
+  "share_problem_rev_g",
+  "problem_partner_detail_rev_g",
+  "problem_partner_acknowledge_rev_g",
+  "react_problem_rev_g",
+  "give_advice_rev_g",
+  "challenge_beliefs_rev_g",
+  "argument_aggresive_rev_g",
+  "jpr_incite_conflict_g",
+  "program_engagement_rev_g",
+  "participation_exercise_rev_g",
+  "program_reinforce_rev_g",
+  "program_challenge_rev_g",
+  "fac_challenge_beliefs_rev_g"
+)
+

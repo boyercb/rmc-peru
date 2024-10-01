@@ -82,6 +82,7 @@ recoded_messages_to_merge <-
          program_engagement_rev_i,
          share_problem_rev_i,
          react_problem_rev_i,
+         jpr_incite_conflict_i,
          any_code_rev_i,
          participation_exercise_rev_g,
          program_reinforce_rev_g,
@@ -95,6 +96,7 @@ recoded_messages_to_merge <-
          program_engagement_rev_g,
          share_problem_rev_g,
          react_problem_rev_g,
+         jpr_incite_conflict_g,
          any_code_rev_g)
 
 

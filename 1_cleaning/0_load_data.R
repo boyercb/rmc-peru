@@ -179,6 +179,7 @@ recoded_messages <-
     share_problem_rev_i = sum(share_problem_rev, na.rm = TRUE),
     react_problem_rev_i = sum(react_problem_rev, na.rm = TRUE),
     any_code_rev_i = sum(any_code_rev, na.rm = TRUE),
+    jpr_incite_conflict_i = sum(jpr_incite_conflict, na.rm = TRUE),
     .groups = "drop"
   ) |>
   group_by(batch, group) |>
@@ -196,8 +197,8 @@ recoded_messages <-
     share_problem_rev_g = sum(share_problem_rev_i, na.rm = TRUE),
     react_problem_rev_g = sum(react_problem_rev_i, na.rm = TRUE),
     any_code_rev_g = sum(any_code_rev_i, na.rm = TRUE),
-    
-    react_problem_rev_g = react_problem_rev_g - argument_aggresive_rev_g
+    jpr_incite_conflict_g = sum(jpr_incite_conflict_i, na.rm = TRUE),
+    react_problem_rev_g = react_problem_rev_g - jpr_incite_conflict_i
   ) |>
   mutate(
     original_group = group,
@@ -206,20 +207,6 @@ recoded_messages <-
   ) |>
   ungroup() |>
   filter(type_actor != "Facilitator")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # endline -----------------------------------------------------------------

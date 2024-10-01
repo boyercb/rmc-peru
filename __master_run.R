@@ -1,16 +1,4 @@
 
-# TODO:
-# [x] fix group randomization issue identified by JP and re-run results
-# - re-estimate tables 9-10 with new coding that JP sent
-# -NOT add group composition variables to lasso: 
-# [x] create figure plotting facilitator and group-level effects
-# - we should make Figure 3 analogous to Figure 4. 
-#   Can you add (for now, for comparison), a version of Figure 4 that shows 
-#   non-parametric relationship between sexual violence (rather than remain in 
-#   the chat) and proportion of men who justify violence?
-# 
-# - Add both key regressors in Tables 6 & 7 (justification index value and proportion any just) match the x-axis variable in Figures 3 and 4 
-
 
 # packages and functions --------------------------------------------------
 
@@ -39,7 +27,7 @@ source("1_cleaning/2_merge.R")
 
 source("1_cleaning/3_covariates.R")
 
-# source("1_cleaning/4_impute.R")
+#source("1_cleaning/4_impute.R")
 
 source("1_cleaning/5_outcomes.R")
 

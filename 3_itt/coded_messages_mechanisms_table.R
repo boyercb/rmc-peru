@@ -1,6 +1,8 @@
+message_mechanisms <- coded_outcomes[c(2, 5, 8)]
+
 mods <- c(
   lapply(
-    coded_outcomes[c(2, 5, 8)],
+    message_mechanisms,
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -13,7 +15,7 @@ mods <- c(
     }
   ),
   lapply(
-    coded_outcomes[c(2, 5, 8)],
+    message_mechanisms,
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -27,7 +29,7 @@ mods <- c(
     }
   ),
   lapply(
-    str_replace(coded_outcomes[c(2, 5, 8)], "_g$", "_prop"),
+    str_replace(message_mechanisms, "_g$", "_prop"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -40,7 +42,7 @@ mods <- c(
     }
   ),
   lapply(
-    str_replace(coded_outcomes[c(2, 5, 8)], "_g$", "_prop"),
+    str_replace(message_mechanisms, "_g$", "_prop"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -201,7 +203,7 @@ ms |> save_kable(
 
 mods <- c(
   lapply(
-    coded_outcomes[c(2, 5, 8)],
+    message_mechanisms,
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -214,7 +216,7 @@ mods <- c(
     }
   ),
   lapply(
-    coded_outcomes[c(2, 5, 8)],
+    message_mechanisms,
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -228,7 +230,7 @@ mods <- c(
     }
   ),
   lapply(
-    str_replace(coded_outcomes[c(2, 5, 8)], "_g$", "_prop"),
+    str_replace(message_mechanisms, "_g$", "_prop"),
     function(x) {
       lm_robust(
         formula = reformulate(
@@ -241,7 +243,7 @@ mods <- c(
     }
   ),
   lapply(
-    str_replace(coded_outcomes[c(2, 5, 8)], "_g$", "_prop"),
+    str_replace(message_mechanisms, "_g$", "_prop"),
     function(x) {
       lm_robust(
         formula = reformulate(
