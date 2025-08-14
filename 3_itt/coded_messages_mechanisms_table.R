@@ -1,4 +1,4 @@
-message_mechanisms <- coded_outcomes[c(2, 5, 8)]
+message_mechanisms <- coded_outcomes[c(2, 8, 10)]
 
 mods <- c(
   lapply(
@@ -106,8 +106,8 @@ ms <- ms |>
   add_header_above(c(
     " " = 1,
     "Share problems" = 2,
-    "Reactions" = 2,
-    "Argument aggressive" = 2
+    "Helpful feedback" = 2,
+    "Negative interaction" = 2
   ), escape = FALSE)
 
 ms <- ms |>
@@ -173,8 +173,8 @@ ms <- ms |>
   add_header_above(c(
     " " = 1,
     "Share problems (\\\\%)" = 2,
-    "Reactions (\\\\%)" = 2,
-    "Argument aggressive (\\\\%)" = 2
+    "Helpful feedback (\\\\%)" = 2,
+    "Negative interactions (\\\\%)" = 2
   ), escape = FALSE)
 
 ms <- ms |>
@@ -194,11 +194,6 @@ ms <- gsub("\\multicolumn{9}{l}{\\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** 
 ms |> save_kable(
   file = paste0("HEP-manuscript/tables/mechanism2.tex")
 )
-
-
-
-
-
 
 
 mods <- c(
@@ -307,8 +302,8 @@ ms <- ms |>
   add_header_above(c(
     " " = 1,
     "Share problems" = 2,
-    "Reactions" = 2,
-    "Argument aggressive" = 2
+    "Helpful feedback" = 2,
+    "Negative interaction" = 2
   ), escape = FALSE)
 
 ms <- ms |>
@@ -374,8 +369,8 @@ ms <- ms |>
   add_header_above(c(
     " " = 1,
     "Share problems (\\\\%)" = 2,
-    "Reactions (\\\\%)" = 2,
-    "Argument aggressive (\\\\%)" = 2
+    "Helpful feedback (\\\\%)" = 2,
+    "Negative interactions (\\\\%)" = 2
   ), escape = FALSE)
 
 ms <- ms |>

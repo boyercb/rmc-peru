@@ -5,8 +5,14 @@ make_report_table <-
            treatment = "treatment",
            keep = NULL,
            title,
+           rows = tibble(
+             covariates = rep(c("No", "Yes"), length(outcomes)),
+             FE = rep(c("Yes", "Yes"), length(outcomes)),
+           ),
            general_note = "Notes: First column for each outcome is design-based least squares estimator that includes fixed effects for randomization strata and batch. Second column adjusts for baseline covariates selected using double-post-selection lasso. Covariates are mean-centered and interacted with treatment. Heteroscedasticity-consistent robust standard errors (HC2) for all specifications are shown in parentheses and p-values in square brackets.",
            data) {
+    
+  nspec <- nrow(rows)/length(outcomes)
   dep_var_means <- colMeans(
     data[data[[treatment]] == 0, outcomes],
     na.rm = TRUE
@@ -17,14 +23,13 @@ make_report_table <-
     na.rm = TRUE
   )
   
-  rows <- tibble(
-    covariates = rep(c("No", "Yes"), length(outcomes)),
-    FE = rep(c("Yes", "Yes"), length(outcomes)),
-    dep_var_mean = rep(paste0("{", specd(dep_var_means, 3), "}"), each = 2),
-    dep_var_sd = rep(paste0("{", specd(dep_var_sd, 3), "}"), each = 2)
-  )
+  mean_sd_rows <- 
+    tibble(
+      dep_var_mean = rep(paste0("{", specd(dep_var_means, 3), "}"), each = nspec),
+      dep_var_sd = rep(paste0("{", specd(dep_var_sd, 3), "}"), each = nspec)
+    )
   
-  rows <- as_tibble(t(rows))
+  rows <- as_tibble(t(bind_cols(rows, mean_sd_rows)))
   rows <- add_column(rows, c("Covariates", "Fixed Effects", "Control Mean",  "Control SD"), .before = 1)
   
   attr(rows, 'position') <- 4:7
@@ -35,7 +40,7 @@ make_report_table <-
     "r.squared", "R$^2$", function(x) paste0("{", specd(x, 3), "}")
   )
   
-  header <- c(1, rep(2, length(outcomes)))
+  header <- c(1, rep(nspec, length(outcomes)))
   names(header) <- c(" ", outcome_labels)
   
   if (!is.null(keep)) {

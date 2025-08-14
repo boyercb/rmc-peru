@@ -165,6 +165,14 @@ demand_labels <- c(
   "Social Desirability (M)"
 )
 
+mechanisms <- c(
+  "remained_in_chat",
+  "days_in_chat",
+  "share_problem_rev_prop",
+  "helpful_feedback_prop",
+  "jpr_incite_conflict_prop"
+)
+
 outcomes <-
   c(
     violence_outcomes,
@@ -198,6 +206,7 @@ coded_outcomes <- c(
   "react_problem_rev_g",
   "give_advice_rev_g",
   "challenge_beliefs_rev_g",
+  "helpful_feedback_g",
   "argument_aggresive_rev_g",
   "jpr_incite_conflict_g",
   "program_engagement_rev_g",

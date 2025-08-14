@@ -31,6 +31,20 @@ lassocovs_alc0 <-
                                                 "any_sexual_bl_c_alc0",
                                                 "any_psychological_bl_c_alc0")]
 
+lassocovs_att1 <- 
+  bl_covariates_att1[!bl_covariates_att1 %in% c("any_ipv_bl_c_att1",
+                                                "any_physical_bl_c_att1",
+                                                "any_sexual_bl_c_att1",
+                                                "any_psychological_bl_c_att1")]
+lassocovs_att0 <- 
+  bl_covariates_att0[!bl_covariates_att0 %in% c("any_ipv_bl_c_att0",
+                                                "any_physical_bl_c_att0",
+                                                "any_sexual_bl_c_att0",
+                                                "any_psychological_bl_c_att0")]
+
+
+
+
 # select baseline covariates that predict outcome (y ~ x)
 y_selected_strata <- 
   map2(
@@ -45,13 +59,10 @@ y_selected_strata <-
                  data = filter(rmc, id_status_w == 1 & strata_new %in% s),
                  fixed_effects = if (s[1] == 2) {
                    c(
-                    # "treatment",
-                    # paste0("strata_new_", 3, "_c_s", s[1]),
                     paste0("batch_", 2:5, "_c_s", s[1])
                    )
                  } else {
                    c(
-                     # "treatment",
                      paste0("batch_", 2:5, "_c_s", s[1])
                    )
                  }
@@ -88,7 +99,6 @@ z_selected_strata <-
         data = filter(rmc, id_status_w == 1 & strata_new %in% s),
         fixed_effects = if (s[1] == 2) {
           c(
-            # paste0("strata_new_", 3, "_c_s", s[1]),
             paste0("batch_", 2:5, "_c_s", s[1])
           )
         } else {
@@ -179,7 +189,6 @@ y_selected_strata_alc <-
                  outcome = x, 
                  data = rmc[eval(parse(text = paste0("rmc$id_status_w == 1 & rmc$batch != 6 &  ", alc_strata[[i]]))), ],
                  fixed_effects = c(
-                   # "treatment",
                    paste0("strata_new_", 2:3, "_c_alc", i - 1),
                    paste0("batch_", 2:5, "_c_alc", i - 1)
                  )
@@ -214,6 +223,76 @@ z_selected_strata_alc <-
   )
 
 z_selected_strata_alc <- bind_rows(z_selected_strata_alc)
+
+
+# tolerance of violence ---------------------------------------------------
+
+
+att_strata <-
+  list("rmc$tolerance_vaw_any_bl == 0", "rmc$tolerance_vaw_any_bl == 1")
+
+# select baseline covariates that predict outcome (y ~ x)
+y_selected_strata_att <- 
+  map2(
+    seq_along(att_strata),
+    list(lassocovs_att0, lassocovs_att1),
+    function(i, covlist) {
+      covs <- 
+        lapply(c(violence_outcomes[1:3], "tolerance_vaw_any", "tolerance_vaw_index", mechanisms),
+               function(x) postlasso(
+                 covariates = covlist,
+                 outcome = x, 
+                 data = rmc[eval(parse(text = paste0("rmc$id_status_w == 1 & ", att_strata[[i]]))), ],
+                 fixed_effects = c(
+                   paste0("strata_new_", 2:3, "_c_att", i - 1),
+                   paste0("batch_", 2:5, "_c_att", i - 1)
+                 )
+               ))
+      covs <- bind_rows(covs)
+      covs$strata <- i - 1
+      covs
+    }
+  )
+
+y_selected_strata_att <- bind_rows(y_selected_strata_att)
+
+# select baseline covariates that predict treatment (z ~ x)
+z_selected_strata_att <- 
+  map2(
+    seq_along(att_strata),
+    list(lassocovs_att0, lassocovs_att1),
+    function(i, covlist) {
+      covs <- postlasso(
+        covariates = covlist,
+        outcome = "treatment", 
+        data = rmc[eval(parse(text = paste0("rmc$id_status_w == 1 & ", att_strata[[i]]))), ],
+        fixed_effects =  c(
+          paste0("strata_new_", 2:3, "_c_att", i - 1),
+          paste0("batch_", 2:5, "_c_att", i - 1)
+        )
+      )
+      covs <- bind_rows(covs)
+      covs$strata <- i - 1
+      covs
+    }
+  )
+
+z_selected_strata_att <- bind_rows(z_selected_strata_att)
+
+
+y_selected_mech <- 
+  lapply(c(mechanisms),
+         function(x) postlasso(
+           covariates = lassocovs,
+           outcome = x, 
+           data = filter(rmc, treatment == 1),
+           fixed_effects = c(
+             paste0("batch_", 2:6, "_c")
+           )
+         )
+  )
+
+y_selected_mech <- bind_rows(y_selected_mech)
 
 
 # attrition ---------------------------------------------------------------

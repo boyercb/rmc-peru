@@ -1,5 +1,10 @@
 
 
+# global options ----------------------------------------------------------
+
+impute <- FALSE
+
+
 # packages and functions --------------------------------------------------
 
 source("0_bin/0_packages.R")
@@ -27,7 +32,7 @@ source("1_cleaning/2_merge.R")
 
 source("1_cleaning/3_covariates.R")
 
-#source("1_cleaning/4_impute.R")
+source("1_cleaning/4_impute.R")
 
 source("1_cleaning/5_outcomes.R")
 
@@ -44,10 +49,24 @@ source("2_covariate_selection/3_select_attrition.R")
 
 source("2_covariate_selection/4_select_stratified.R")
 
+source("2_covariate_selection/5_combine_selections.R")
+
 
 # intent-to-treat ---------------------------------------------------------
 
-source("3_itt/1_primary_outcomes.R")
+source("3_itt/0_draw_randomizations.R")
+
+source("3_itt/1_prereg_outcomes.R")
+
+source("3_itt/2_prereg_subgroups.R")
+
+source("3_itt/3_peer_effects.R")
+
+source("3_itt/4_peer_mechanisms.R")
+
+source("3_itt/5_fac_heterogeneity.R")
+
+
 
 source("3_itt/2_secondary_outcomes.R")
 
@@ -80,7 +99,6 @@ source("3_itt/coded_messages_mechanisms_table.R")
 source("4_compliance/iv_estimates.R")
 
 # robustness --------------------------------------------------------------
-
 
 source("5_robustness/attrition.R")
 

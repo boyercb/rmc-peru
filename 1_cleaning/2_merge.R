@@ -3,14 +3,6 @@
 # total_men <- nrow(blm)
 # total_women <- blw$c
   
-# make sure participant id is character vector
-blm$participant_id <- as.character(blm$participant_id)
-blw$participant_id <- as.character(blw$participant_id)
-impl$participant_id <- as.character(impl$participant_id)
-rand$participant_id <- as.character(rand$participant_id)
-elm$participant_id <- as.character(elm$participant_id)
-elw$participant_id <- as.character(elw$participant_id)
-
 
 # merge baseline ----------------------------------------------------------
 
@@ -52,10 +44,25 @@ messages_to_merge <-
   select(messages,
          participant_id,
          msg_i,
+         msg_char_above_one_i,
+         msg_word_above_one_i,
+         msg_word_above_ten_i,
          msg_comm_emo_reg_i,
          msg_health_sex_i,
          msg_finance_i,
          msg_life_home_i)
+
+messages_nested_to_merge <-
+  select(messages_nested,
+         participant_id,
+         msg_exp,
+         msg_char_above_one_exp,
+         msg_word_above_one_exp,
+         msg_word_above_ten_exp,
+         msg_comm_emo_reg_exp,
+         msg_health_sex_exp,
+         msg_finance_exp,
+         msg_life_home_exp)
 
 coded_messages_to_merge <- 
   select(coded_messages,
@@ -78,6 +85,7 @@ recoded_messages_to_merge <-
          give_advice_rev_i,
          challenge_beliefs_rev_i,
          fac_challenge_beliefs_rev_i,
+         helpful_feedback_i,
          argument_aggresive_rev_i,
          program_engagement_rev_i,
          share_problem_rev_i,
@@ -92,12 +100,46 @@ recoded_messages_to_merge <-
          give_advice_rev_g,
          challenge_beliefs_rev_g,
          fac_challenge_beliefs_rev_g,
+         helpful_feedback_g,
          argument_aggresive_rev_g,
          program_engagement_rev_g,
          share_problem_rev_g,
          react_problem_rev_g,
          jpr_incite_conflict_g,
          any_code_rev_g)
+
+recoded_messages_nested_to_merge <- 
+  select(recoded_messages_nested,
+         participant_id,
+         participation_exercise_rev_exp,
+         program_reinforce_rev_exp,
+         program_challenge_rev_exp,
+         problem_partner_detail_rev_exp,
+         problem_partner_acknowledge_rev_exp,
+         give_advice_rev_exp,
+         challenge_beliefs_rev_exp,
+         fac_challenge_beliefs_rev_exp,
+         argument_aggresive_rev_exp,
+         program_engagement_rev_exp,
+         share_problem_rev_exp,
+         react_problem_rev_exp,
+         jpr_incite_conflict_exp,
+         any_code_rev_exp,
+         participation_exercise_rev_exp,
+         program_reinforce_rev_exp,
+         program_challenge_rev_exp,
+         problem_partner_detail_rev_exp,
+         problem_partner_acknowledge_rev_exp,
+         give_advice_rev_exp,
+         challenge_beliefs_rev_exp,
+         fac_challenge_beliefs_rev_exp,
+         helpful_feedback_exp,
+         argument_aggresive_rev_exp,
+         program_engagement_rev_exp,
+         share_problem_rev_exp,
+         react_problem_rev_exp,
+         jpr_incite_conflict_exp,
+         any_code_rev_exp)
 
 
 # merge endline -----------------------------------------------------------
@@ -117,8 +159,10 @@ rmc <-
   left_join(bl_to_merge, by = "participant_id") |>
   left_join(impl_to_merge, by = "participant_id") |> 
   left_join(messages_to_merge, by = "participant_id") |>
+  left_join(messages_nested_to_merge, by = "participant_id") |>
   left_join(coded_messages_to_merge, by = c("participant_id")) |>
-  left_join(recoded_messages_to_merge, by = c("participant_id"))
+  left_join(recoded_messages_to_merge, by = c("participant_id")) |>
+  left_join(recoded_messages_nested_to_merge, by = c("participant_id"))
 
 
 # create useful sample indicators -----------------------------------------

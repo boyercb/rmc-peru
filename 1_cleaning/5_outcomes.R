@@ -365,9 +365,7 @@ rmc <-
 # M9-1vi, M9-1vii, M9-1viii). Index takes values 0 to 1, when 0 signifies the
 # worst possible outcome and 1 the best.
 
-
-
- rmc <- 
+rmc <- 
   rmc |>
   mutate(
     attitudes_w = (32 - (gem1_w + gem2_w + gem3_w + gem4_w + gem5_w + gem6_w + 
@@ -383,6 +381,13 @@ rmc <-
    mutate(across(everything(), function(x) as.numeric(x) %in% c(3, 4))) |>
    rowSums()
  
+rmc$tolerance_vaw_any <- as.numeric(rmc$tolerance_vaw_index > 0)
+rmc$tolerance_vaw_1_m_any <- as.numeric(rmc$tolerance_vaw_1_m %in% c(3, 4))
+rmc$tolerance_vaw_2_m_any <- as.numeric(rmc$tolerance_vaw_2_m %in% c(3, 4))
+rmc$tolerance_vaw_3_m_any <- as.numeric(rmc$tolerance_vaw_3_m %in% c(3, 4))
+rmc$tolerance_vaw_4_m_any <- as.numeric(rmc$tolerance_vaw_4_m %in% c(3, 4))
+rmc$tolerance_vaw_5_m_any <- as.numeric(rmc$tolerance_vaw_5_m %in% c(3, 4))
+
 rmc <-
   rmc |>
   mutate(
@@ -448,11 +453,23 @@ rmc <-
   group_by(batch, group) |>
   mutate(
     msg_g = sum(msg_i, na.rm = TRUE) - msg_i,
+    msg_char_above_one_g = sum(msg_char_above_one_i, na.rm = TRUE) - msg_char_above_one_i,
+    msg_word_above_one_g = sum(msg_word_above_one_i, na.rm = TRUE) - msg_word_above_one_i,
+    msg_word_above_ten_g = sum(msg_word_above_ten_i, na.rm = TRUE) - msg_word_above_ten_i,
+    
     msg_comm_emo_reg_g = sum(msg_comm_emo_reg_i, na.rm = TRUE) - msg_comm_emo_reg_i,
     msg_health_sex_g = sum(msg_health_sex_i, na.rm = TRUE) - msg_health_sex_i,
     msg_finance_g = sum(msg_finance_i, na.rm = TRUE) - msg_finance_i,
     msg_life_home_g = sum(msg_life_home_i, na.rm = TRUE) - msg_life_home_i,
     msg_other_g = msg_health_sex_g + msg_finance_g + msg_life_home_g,
+    msg_other_i = msg_health_sex_i + msg_finance_i + msg_life_home_i,
+    
+    msg_exp_g = msg_exp - msg_i,
+    msg_comm_emo_reg_exp_g = msg_comm_emo_reg_exp - msg_comm_emo_reg_i,
+    msg_health_sex_exp_g = msg_health_sex_exp - msg_health_sex_i,
+    msg_finance_exp_g = msg_finance_exp - msg_finance_i,
+    msg_life_home_exp_g = msg_life_home_exp - msg_life_home_i,
+    msg_other_exp_g = msg_health_sex_exp_g + msg_finance_exp_g + msg_life_home_exp_g,
     
     msg_g_v = sum(msg_i * any_ipv_bl, na.rm = TRUE) - msg_i * any_ipv_bl,
     msg_comm_emo_reg_g_v = sum(msg_comm_emo_reg_i * any_ipv_bl, na.rm = TRUE) - msg_comm_emo_reg_i * any_ipv_bl,
@@ -520,6 +537,44 @@ rmc <-
       (msg_other_g - min(msg_other_g[treatment!=0])) / 
         (max(msg_other_g) - min(msg_other_g[treatment!=0]))
     ),
+    
+    msg_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_exp_g - min(msg_exp_g[treatment!=0])) / 
+        (max(msg_exp_g) - min(msg_exp_g[treatment!=0]))
+    ),
+    msg_comm_emo_reg_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_comm_emo_reg_exp_g - min(msg_comm_emo_reg_exp_g[treatment!=0])) / 
+        (max(msg_comm_emo_reg_exp_g) - min(msg_comm_emo_reg_exp_g[treatment!=0]))
+    ),
+    msg_health_sex_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_health_sex_exp_g - min(msg_health_sex_exp_g[treatment!=0])) / 
+        (max(msg_health_sex_exp_g) - min(msg_health_sex_exp_g[treatment!=0]))
+    ),
+    msg_finance_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_finance_exp_g - min(msg_finance_exp_g[treatment!=0])) / 
+        (max(msg_finance_exp_g) - min(msg_finance_exp_g[treatment!=0]))
+    ),
+    msg_life_home_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_life_home_exp_g - min(msg_life_home_exp_g[treatment!=0])) / 
+        (max(msg_life_home_exp_g) - min(msg_life_home_exp_g[treatment!=0]))
+    ),
+    msg_other_exp_g_std = ifelse(
+      treatment==0, 
+      0, 
+      (msg_other_exp_g - min(msg_other_exp_g[treatment!=0])) / 
+        (max(msg_other_exp_g) - min(msg_other_exp_g[treatment!=0]))
+    ),
+    
     msg_g_v_std = ifelse(
       treatment==0, 
       0, 
@@ -1207,50 +1262,118 @@ rmc <-
     challenge_beliefs_prop = challenge_beliefs_g / msg_g,#sum(msg_i),
     participants_argue_prop = participants_argue_g / msg_g,#sum(msg_i)
     
-    participation_exercise_rev_g = replace(participation_exercise_rev_g, treatment == 0, 0),
-    program_reinforce_rev_g = replace(program_reinforce_rev_g, treatment == 0, 0),
-    program_challenge_rev_g = replace(program_challenge_rev_g, treatment == 0, 0),
-    problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, treatment == 0, 0),
-    problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, treatment == 0, 0),
-    give_advice_rev_g = replace(give_advice_rev_g, treatment == 0, 0),
-    challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, treatment == 0, 0),
-    fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, treatment == 0, 0),
-    argument_aggresive_rev_g = replace(argument_aggresive_rev_g, treatment == 0, 0),
-    program_engagement_rev_g = replace(program_engagement_rev_g, treatment == 0, 0),
-    share_problem_rev_g = replace(share_problem_rev_g, treatment == 0, 0),
-    react_problem_rev_g = replace(react_problem_rev_g, treatment == 0, 0),
-    jpr_incite_conflict_g = replace(jpr_incite_conflict_g, treatment == 0, 0),
-    any_code_rev_g = replace(any_code_rev_g, treatment == 0, 0),
+    # participation_exercise_rev_g = replace(participation_exercise_rev_g, treatment == 0, 0),
+    # program_reinforce_rev_g = replace(program_reinforce_rev_g, treatment == 0, 0),
+    # program_challenge_rev_g = replace(program_challenge_rev_g, treatment == 0, 0),
+    # problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, treatment == 0, 0),
+    # problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, treatment == 0, 0),
+    # give_advice_rev_g = replace(give_advice_rev_g, treatment == 0, 0),
+    # challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, treatment == 0, 0),
+    # fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, treatment == 0, 0),
+    # helpful_feedback_g = replace(helpful_feedback_g, treatment == 0, 0),
+    # argument_aggresive_rev_g = replace(argument_aggresive_rev_g, treatment == 0, 0),
+    # program_engagement_rev_g = replace(program_engagement_rev_g, treatment == 0, 0),
+    # share_problem_rev_g = replace(share_problem_rev_g, treatment == 0, 0),
+    # react_problem_rev_g = replace(react_problem_rev_g, treatment == 0, 0),
+    # jpr_incite_conflict_g = replace(jpr_incite_conflict_g, treatment == 0, 0),
+    # any_code_rev_g = replace(any_code_rev_g, treatment == 0, 0),
     
-    participation_exercise_rev_g = replace(participation_exercise_rev_g, is.na(participation_exercise_rev_g), mean(participation_exercise_rev_g, na.rm = TRUE)),
-    program_reinforce_rev_g = replace(program_reinforce_rev_g, is.na(program_reinforce_rev_g), mean(program_reinforce_rev_g, na.rm = TRUE)),
-    program_challenge_rev_g = replace(program_challenge_rev_g, is.na(program_challenge_rev_g), mean(program_challenge_rev_g, na.rm = TRUE)),
-    problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, is.na(problem_partner_detail_rev_g), mean(problem_partner_detail_rev_g, na.rm = TRUE)),
-    problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, is.na(problem_partner_acknowledge_rev_g), mean(problem_partner_acknowledge_rev_g, na.rm = TRUE)),
-    give_advice_rev_g = replace(give_advice_rev_g, is.na(give_advice_rev_g), mean(give_advice_rev_g, na.rm = TRUE)),
-    challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, is.na(challenge_beliefs_rev_g), mean(challenge_beliefs_rev_g, na.rm = TRUE)),
-    fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, is.na(fac_challenge_beliefs_rev_g), mean(fac_challenge_beliefs_rev_g, na.rm = TRUE)),
-    argument_aggresive_rev_g = replace(argument_aggresive_rev_g, is.na(argument_aggresive_rev_g), mean(argument_aggresive_rev_g, na.rm = TRUE)),
-    program_engagement_rev_g = replace(program_engagement_rev_g, is.na(program_engagement_rev_g), mean(program_engagement_rev_g, na.rm = TRUE)),
-    share_problem_rev_g = replace(share_problem_rev_g, is.na(share_problem_rev_g), mean(share_problem_rev_g, na.rm = TRUE)),
-    react_problem_rev_g = replace(react_problem_rev_g, is.na(react_problem_rev_g), mean(react_problem_rev_g, na.rm = TRUE)),
-    jpr_incite_conflict_g = replace(jpr_incite_conflict_g, is.na(jpr_incite_conflict_g), mean(jpr_incite_conflict_g, na.rm = TRUE)),
-    any_code_rev_g = replace(any_code_rev_g, is.na(any_code_rev_g), mean(any_code_rev_g, na.rm = TRUE)),
+    # participation_exercise_rev_g = replace(participation_exercise_rev_g, is.na(participation_exercise_rev_g), mean(participation_exercise_rev_g, na.rm = TRUE)),
+    # program_reinforce_rev_g = replace(program_reinforce_rev_g, is.na(program_reinforce_rev_g), mean(program_reinforce_rev_g, na.rm = TRUE)),
+    # program_challenge_rev_g = replace(program_challenge_rev_g, is.na(program_challenge_rev_g), mean(program_challenge_rev_g, na.rm = TRUE)),
+    # problem_partner_detail_rev_g = replace(problem_partner_detail_rev_g, is.na(problem_partner_detail_rev_g), mean(problem_partner_detail_rev_g, na.rm = TRUE)),
+    # problem_partner_acknowledge_rev_g = replace(problem_partner_acknowledge_rev_g, is.na(problem_partner_acknowledge_rev_g), mean(problem_partner_acknowledge_rev_g, na.rm = TRUE)),
+    # give_advice_rev_g = replace(give_advice_rev_g, is.na(give_advice_rev_g), mean(give_advice_rev_g, na.rm = TRUE)),
+    # challenge_beliefs_rev_g = replace(challenge_beliefs_rev_g, is.na(challenge_beliefs_rev_g), mean(challenge_beliefs_rev_g, na.rm = TRUE)),
+    # fac_challenge_beliefs_rev_g = replace(fac_challenge_beliefs_rev_g, is.na(fac_challenge_beliefs_rev_g), mean(fac_challenge_beliefs_rev_g, na.rm = TRUE)),
+    # helpful_feedback_g = replace(helpful_feedback_g, is.na(helpful_feedback_g), mean(helpful_feedback_g, na.rm = TRUE)),
+    # argument_aggresive_rev_g = replace(argument_aggresive_rev_g, is.na(argument_aggresive_rev_g), mean(argument_aggresive_rev_g, na.rm = TRUE)),
+    # program_engagement_rev_g = replace(program_engagement_rev_g, is.na(program_engagement_rev_g), mean(program_engagement_rev_g, na.rm = TRUE)),
+    # share_problem_rev_g = replace(share_problem_rev_g, is.na(share_problem_rev_g), mean(share_problem_rev_g, na.rm = TRUE)),
+    # react_problem_rev_g = replace(react_problem_rev_g, is.na(react_problem_rev_g), mean(react_problem_rev_g, na.rm = TRUE)),
+    # jpr_incite_conflict_g = replace(jpr_incite_conflict_g, is.na(jpr_incite_conflict_g), mean(jpr_incite_conflict_g, na.rm = TRUE)),
+    # any_code_rev_g = replace(any_code_rev_g, is.na(any_code_rev_g), mean(any_code_rev_g, na.rm = TRUE)),
     
-    participation_exercise_rev_prop = participation_exercise_rev_g / msg_g,
-    program_reinforce_rev_prop = program_reinforce_rev_g / msg_g,
-    program_challenge_rev_prop = program_challenge_rev_g / msg_g,
-    problem_partner_detail_rev_prop = problem_partner_detail_rev_g / msg_g,
-    problem_partner_acknowledge_rev_prop = problem_partner_acknowledge_rev_g / msg_g,
-    give_advice_rev_prop = give_advice_rev_g / msg_g,
-    challenge_beliefs_rev_prop = challenge_beliefs_rev_g / msg_g,
-    fac_challenge_beliefs_rev_prop = fac_challenge_beliefs_rev_g / msg_g,
-    argument_aggresive_rev_prop = argument_aggresive_rev_g / msg_g,
-    program_engagement_rev_prop = program_engagement_rev_g / msg_g,
-    share_problem_rev_prop = share_problem_rev_g / msg_g,
-    react_problem_rev_prop = react_problem_rev_g / msg_g,
-    jpr_incite_conflict_prop = jpr_incite_conflict_g / msg_g,
-    any_code_rev_prop = any_code_rev_g / msg_g
+    participation_exercise_rev_prop = participation_exercise_rev_g / any_code_rev_g,
+    program_reinforce_rev_prop = program_reinforce_rev_g / any_code_rev_g,
+    program_challenge_rev_prop = program_challenge_rev_g / any_code_rev_g,
+    problem_partner_detail_rev_prop = problem_partner_detail_rev_g / any_code_rev_g,
+    problem_partner_acknowledge_rev_prop = problem_partner_acknowledge_rev_g / any_code_rev_g,
+    give_advice_rev_prop = give_advice_rev_g / any_code_rev_g,
+    challenge_beliefs_rev_prop = challenge_beliefs_rev_g / any_code_rev_g,
+    fac_challenge_beliefs_rev_prop = fac_challenge_beliefs_rev_g / any_code_rev_g,
+    helpful_feedback_prop = helpful_feedback_g / any_code_rev_g,
+    argument_aggresive_rev_prop = argument_aggresive_rev_g / any_code_rev_g,
+    program_engagement_rev_prop = program_engagement_rev_g / any_code_rev_g,
+    share_problem_rev_prop = share_problem_rev_g / any_code_rev_g,
+    react_problem_rev_prop = react_problem_rev_g / any_code_rev_g,
+    jpr_incite_conflict_prop = jpr_incite_conflict_g / any_code_rev_g,
+    any_code_rev_prop = any_code_rev_g / msg_g,
+    
+    participation_exercise_rev_exp = replace(participation_exercise_rev_exp, treatment == 0, 0),
+    program_reinforce_rev_exp = replace(program_reinforce_rev_exp, treatment == 0, 0),
+    program_challenge_rev_exp = replace(program_challenge_rev_exp, treatment == 0, 0),
+    problem_partner_detail_rev_exp = replace(problem_partner_detail_rev_exp, treatment == 0, 0),
+    problem_partner_acknowledge_rev_exp = replace(problem_partner_acknowledge_rev_exp, treatment == 0, 0),
+    give_advice_rev_exp = replace(give_advice_rev_exp, treatment == 0, 0),
+    challenge_beliefs_rev_exp = replace(challenge_beliefs_rev_exp, treatment == 0, 0),
+    fac_challenge_beliefs_rev_exp = replace(fac_challenge_beliefs_rev_exp, treatment == 0, 0),
+    helpful_feedback_exp = replace(helpful_feedback_exp, treatment == 0, 0),
+    argument_aggresive_rev_exp = replace(argument_aggresive_rev_exp, treatment == 0, 0),
+    program_engagement_rev_exp = replace(program_engagement_rev_exp, treatment == 0, 0),
+    share_problem_rev_exp = replace(share_problem_rev_exp, treatment == 0, 0),
+    react_problem_rev_exp = replace(react_problem_rev_exp, treatment == 0, 0),
+    jpr_incite_conflict_exp = replace(jpr_incite_conflict_exp, treatment == 0, 0),
+    any_code_rev_exp = replace(any_code_rev_exp, treatment == 0, 0),
+    
+    # participation_exercise_rev_exp = replace(participation_exercise_rev_exp, is.na(participation_exercise_rev_exp), mean(participation_exercise_rev_exp, na.rm = TRUE)),
+    # program_reinforce_rev_exp = replace(program_reinforce_rev_exp, is.na(program_reinforce_rev_exp), mean(program_reinforce_rev_exp, na.rm = TRUE)),
+    # program_challenge_rev_exp = replace(program_challenge_rev_exp, is.na(program_challenge_rev_exp), mean(program_challenge_rev_exp, na.rm = TRUE)),
+    # problem_partner_detail_rev_exp = replace(problem_partner_detail_rev_exp, is.na(problem_partner_detail_rev_exp), mean(problem_partner_detail_rev_exp, na.rm = TRUE)),
+    # problem_partner_acknowledge_rev_exp = replace(problem_partner_acknowledge_rev_exp, is.na(problem_partner_acknowledge_rev_exp), mean(problem_partner_acknowledge_rev_exp, na.rm = TRUE)),
+    # give_advice_rev_exp = replace(give_advice_rev_exp, is.na(give_advice_rev_exp), mean(give_advice_rev_exp, na.rm = TRUE)),
+    # challenge_beliefs_rev_exp = replace(challenge_beliefs_rev_exp, is.na(challenge_beliefs_rev_exp), mean(challenge_beliefs_rev_exp, na.rm = TRUE)),
+    # fac_challenge_beliefs_rev_exp = replace(fac_challenge_beliefs_rev_exp, is.na(fac_challenge_beliefs_rev_exp), mean(fac_challenge_beliefs_rev_exp, na.rm = TRUE)),
+    # helpful_feedback_exp = replace(helpful_feedback_exp, is.na(helpful_feedback_exp), mean(helpful_feedback_exp, na.rm = TRUE)),
+    # argument_aggresive_rev_exp = replace(argument_aggresive_rev_exp, is.na(argument_aggresive_rev_exp), mean(argument_aggresive_rev_exp, na.rm = TRUE)),
+    # program_engagement_rev_exp = replace(program_engagement_rev_exp, is.na(program_engagement_rev_exp), mean(program_engagement_rev_exp, na.rm = TRUE)),
+    # share_problem_rev_exp = replace(share_problem_rev_exp, is.na(share_problem_rev_exp), mean(share_problem_rev_exp, na.rm = TRUE)),
+    # react_problem_rev_exp = replace(react_problem_rev_exp, is.na(react_problem_rev_exp), mean(react_problem_rev_exp, na.rm = TRUE)),
+    # jpr_incite_conflict_exp = replace(jpr_incite_conflict_exp, is.na(jpr_incite_conflict_exp), mean(jpr_incite_conflict_exp, na.rm = TRUE)),
+    # any_code_rev_exp = replace(any_code_rev_exp, is.na(any_code_rev_exp), mean(any_code_rev_exp, na.rm = TRUE)),
+    # 
+    participation_exercise_rev_exp_prop = (participation_exercise_rev_exp - participation_exercise_rev_i) / any_code_rev_exp,
+    program_reinforce_rev_exp_prop = (program_reinforce_rev_exp - program_reinforce_rev_i) / any_code_rev_exp,
+    program_challenge_rev_exp_prop = (program_challenge_rev_exp - program_challenge_rev_i) / any_code_rev_exp,
+    problem_partner_detail_rev_exp_prop = (problem_partner_detail_rev_exp - problem_partner_detail_rev_i) / any_code_rev_exp,
+    problem_partner_acknowledge_rev_exp_prop = (problem_partner_acknowledge_rev_exp - problem_partner_acknowledge_rev_i) / any_code_rev_exp,
+    give_advice_rev_exp_prop = (give_advice_rev_exp - give_advice_rev_i) / any_code_rev_exp,
+    challenge_beliefs_rev_exp_prop = (challenge_beliefs_rev_exp - challenge_beliefs_rev_i) / any_code_rev_exp,
+    fac_challenge_beliefs_rev_exp_prop = (fac_challenge_beliefs_rev_exp - fac_challenge_beliefs_rev_i) / any_code_rev_exp,
+    helpful_feedback_exp_prop = (helpful_feedback_exp - helpful_feedback_i) / any_code_rev_exp,
+    argument_aggresive_rev_exp_prop = (argument_aggresive_rev_exp - argument_aggresive_rev_i) / any_code_rev_exp,
+    program_engagement_rev_exp_prop = (program_engagement_rev_exp - program_engagement_rev_i) / any_code_rev_exp,
+    share_problem_rev_exp_prop = (share_problem_rev_exp - share_problem_rev_i) / any_code_rev_exp,
+    react_problem_rev_exp_prop = (react_problem_rev_exp - react_problem_rev_i) / any_code_rev_exp,
+    jpr_incite_conflict_exp_prop = (jpr_incite_conflict_exp - jpr_incite_conflict_i) / any_code_rev_exp,
+    any_code_rev_exp_prop = any_code_rev_exp / msg_exp,
+    
+    participation_exercise_rev_exp_prop = replace(participation_exercise_rev_exp_prop, any_code_rev_exp == 0, 0),
+    program_reinforce_rev_exp_prop = replace(program_reinforce_rev_exp_prop, any_code_rev_exp == 0, 0),
+    program_challenge_rev_exp_prop = replace(program_challenge_rev_exp_prop, any_code_rev_exp == 0, 0),
+    problem_partner_detail_rev_exp_prop = replace(problem_partner_detail_rev_exp_prop, any_code_rev_exp == 0, 0),
+    problem_partner_acknowledge_rev_exp_prop = replace(problem_partner_acknowledge_rev_exp_prop, any_code_rev_exp == 0, 0),
+    give_advice_rev_exp_prop = replace(give_advice_rev_exp_prop, any_code_rev_exp == 0, 0),
+    challenge_beliefs_rev_exp_prop = replace(challenge_beliefs_rev_exp_prop, any_code_rev_exp == 0, 0),
+    fac_challenge_beliefs_rev_exp_prop = replace(fac_challenge_beliefs_rev_exp_prop, any_code_rev_exp == 0, 0),
+    helpful_feedback_exp_prop = replace(helpful_feedback_exp_prop, any_code_rev_exp == 0, 0),
+    argument_aggresive_rev_exp_prop = replace(argument_aggresive_rev_exp_prop, any_code_rev_exp == 0, 0),
+    program_engagement_rev_exp_prop = replace(program_engagement_rev_exp_prop, any_code_rev_exp == 0, 0),
+    share_problem_rev_exp_prop = replace(share_problem_rev_exp_prop, any_code_rev_exp == 0, 0),
+    react_problem_rev_exp_prop = replace(react_problem_rev_exp_prop, any_code_rev_exp == 0, 0),
+    jpr_incite_conflict_exp_prop = replace(jpr_incite_conflict_exp_prop, any_code_rev_exp == 0, 0),
+    any_code_rev_exp_prop = replace(any_code_rev_exp_prop, any_code_rev_exp == 0, 0)
+    
   ) |>
   ungroup() 
 
@@ -1307,7 +1430,6 @@ rmc <-
   )
 
 
-# add group-level to covariate set ----------------------------------------
 
 
 

@@ -13,7 +13,6 @@ y_selected <-
            outcome = x, 
            data = filter(rmc, id_status_w == 1),
            fixed_effects = c(
-             # "treatment",
              paste0("strata_new_", 2:4, "_c"),
              paste0("batch_", 2:5, "_c")
            )
@@ -32,3 +31,18 @@ z_selected <- postlasso(
     paste0("batch_", 2:5, "_c")
   )
 )
+
+
+y_selected_mech <- 
+  lapply(c(mechanisms),
+         function(x) postlasso(
+           covariates = lassocovs,
+           outcome = x, 
+           data = filter(rmc, treatment == 1),
+           fixed_effects = c(
+             paste0("batch_", 2:6, "_c")
+           )
+         )
+  )
+
+y_selected_mech <- bind_rows(y_selected_mech)

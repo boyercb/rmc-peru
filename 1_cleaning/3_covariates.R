@@ -115,6 +115,9 @@ rmc$any_ipv_refusals_bl <- as.numeric(rmc$ipv_refusals_bl > 0)
 rmc <-
   rmc |>
   mutate(
+    age_m_cat2_bl = as.numeric(I(age_m_bl > 31 & age_m_bl <= 38)),
+    age_m_cat3_bl = as.numeric(I(age_m_bl > 38 & age_m_bl <= 60)),
+      
     control_index_bl = 
       ((4 - control_cooking_w_bl) / 3  + (4 - control_visiting_w_bl) / 3  +
          (4 - control_buying_clothes_w_bl) / 3) / 3,
@@ -128,7 +131,8 @@ rmc <-
                 (4 - communication9_w_bl) + communication10_w_bl +
                 communication11_w_bl) / 44,
     
-    emo_reg_w_bl = ((reaction1_w_bl >= 3) + (reaction2_w_bl <= 1) + (reaction3_w_bl <= 1) + (reaction5_w_bl >= 3)) / 4,
+    emo_reg_w_bl = ((reaction1_w_bl >= 3) + (reaction2_w_bl <= 1) +
+                      (reaction3_w_bl <= 1) + (reaction5_w_bl >= 3)) / 4,
     
     arguments_m_bl = (conflicts1_m_bl + conflicts2_m_bl + conflicts3_m_bl +
                    conflicts4_m_bl + conflicts5_m_bl + conflicts6_m_bl +
@@ -156,6 +160,7 @@ rmc$tolerance_vaw_index_bl <-
 
 rmc$tolerance_vaw_any_bl <- 
   as.numeric(rmc$tolerance_vaw_index_bl > 0)
+
 
 rmc <- 
   rmc |>
@@ -222,6 +227,9 @@ blw_covariates_cont <-
 
 blw_covariates_bin <-
   c(blw_covariates_bin, "ipv_short_form_w_bl")
+
+blm_covariates_bin <-
+  c(blm_covariates_bin, "age_m_cat2_bl", "age_m_cat3_bl")
 
 
 # prep additional covariates ----------------------------------------------
@@ -299,23 +307,27 @@ rmc <- rmc |>
         "any_sexual_bl",
         "any_psychological_bl",
         "education_m_bl",
-        "alcohol_man_w_bl"
+        "alcohol_man_w_bl",
+        "tolerance_vaw_any_bl"
       ), 
       function(x) replace_na(x, 0)
     )
   )
 
-nonzero_responses <- colSums(rmc[, bl_covariates] > 0)
-nonzero_responses_s1 <- colSums(rmc[rmc$strata_new %in% c(1), bl_covariates] > 0)
-nonzero_responses_s2 <- colSums(rmc[rmc$strata_new %in% c(2, 3), bl_covariates] > 0)
-nonzero_responses_phy1 <- colSums(rmc[rmc$any_physical_bl == 1 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_phy0 <- colSums(rmc[rmc$any_physical_bl == 0 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_sex1 <- colSums(rmc[rmc$any_sexual_bl == 1 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_sex0 <- colSums(rmc[rmc$any_sexual_bl == 0 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_edu1 <- colSums(rmc[rmc$education_m_bl >= 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_edu0 <- colSums(rmc[rmc$education_m_bl < 6, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_alc1 <- colSums(rmc[rmc$alcohol_man_w_bl > 1, bl_covariates] > 0, na.rm = TRUE)
-nonzero_responses_alc0 <- colSums(rmc[rmc$alcohol_man_w_bl == 1, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses <- colSums(rmc[rmc$id_status_w == 1, bl_covariates] > 0)
+nonzero_responses_s1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$strata_new %in% c(1), bl_covariates] > 0)
+nonzero_responses_s2 <- colSums(rmc[rmc$id_status_w == 1 & rmc$strata_new %in% c(2, 3), bl_covariates] > 0)
+nonzero_responses_phy1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$any_physical_bl == 1 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_phy0 <- colSums(rmc[rmc$id_status_w == 1 & rmc$any_physical_bl == 0 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_sex1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$any_sexual_bl == 1 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_sex0 <- colSums(rmc[rmc$id_status_w == 1 & rmc$any_sexual_bl == 0 & rmc$batch != 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_edu1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$education_m_bl >= 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_edu0 <- colSums(rmc[rmc$id_status_w == 1 & rmc$education_m_bl < 6, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_alc1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$alcohol_man_w_bl > 1, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_alc0 <- colSums(rmc[rmc$id_status_w == 1 & rmc$alcohol_man_w_bl == 1, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_att1 <- colSums(rmc[rmc$id_status_w == 1 & rmc$tolerance_vaw_any_bl == 1, bl_covariates] > 0, na.rm = TRUE)
+nonzero_responses_att0 <- colSums(rmc[rmc$id_status_w == 1 & rmc$tolerance_vaw_any_bl == 0, bl_covariates] > 0, na.rm = TRUE)
+
 
 covs_with_few_responses <- names(nonzero_responses)[nonzero_responses <= 20]
 covs_with_few_responses_s1 <- names(nonzero_responses_s1)[nonzero_responses_s1 <= 20]
@@ -328,6 +340,9 @@ covs_with_few_responses_edu1 <- names(nonzero_responses_edu1)[nonzero_responses_
 covs_with_few_responses_edu0 <- names(nonzero_responses_edu0)[nonzero_responses_edu0 <= 20]
 covs_with_few_responses_alc1 <- names(nonzero_responses_alc1)[nonzero_responses_alc1 <= 20]
 covs_with_few_responses_alc0 <- names(nonzero_responses_alc0)[nonzero_responses_alc0 <= 20]
+covs_with_few_responses_att1 <- names(nonzero_responses_att1)[nonzero_responses_att1 <= 20]
+covs_with_few_responses_att0 <- names(nonzero_responses_att0)[nonzero_responses_att0 <= 20]
+
 
 bl_covariates <- bl_covariates[!bl_covariates %in% covs_with_few_responses]
 bl_covariates_s1 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_s1]
@@ -340,6 +355,8 @@ bl_covariates_edu1 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_
 bl_covariates_edu0 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_edu0]
 bl_covariates_alc1 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_alc1]
 bl_covariates_alc0 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_alc0]
+bl_covariates_att1 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_att1]
+bl_covariates_att0 <- bl_covariates[!bl_covariates %in% covs_with_few_responses_att0]
 
 # center covariates
 rmc[, paste0(bl_covariates, "_c")] <- 
@@ -378,6 +395,21 @@ rmc[rmc$alcohol_man_w_bl > 1 & rmc$batch != 6, paste0(bl_covariates_alc1, "_c_al
 rmc[rmc$alcohol_man_w_bl == 1 & rmc$batch != 6, paste0(bl_covariates_alc0, "_c_alc0")] <- 
   scale(rmc[rmc$alcohol_man_w_bl == 1 & rmc$batch != 6, bl_covariates_alc0], center = TRUE, scale = FALSE)
 
+rmc[rmc$tolerance_vaw_any_bl == 1, paste0(bl_covariates_att1, "_c_att1")] <- 
+  scale(rmc[rmc$tolerance_vaw_any_bl == 1, bl_covariates_att1], center = TRUE, scale = FALSE)
+
+rmc[rmc$tolerance_vaw_any_bl == 0, paste0(bl_covariates_att0, "_c_att0")] <- 
+  scale(rmc[rmc$tolerance_vaw_any_bl == 0, bl_covariates_att0], center = TRUE, scale = FALSE)
+
+rmc[rmc$treatment == 1, paste0(bl_covariates, "_c_t1")] <- 
+  scale(rmc[rmc$treatment == 1, bl_covariates], center = TRUE, scale = FALSE)
+
+rmc[rmc$treatment == 1 & rmc$tolerance_vaw_any_bl == 1, paste0(bl_covariates_att1, "_c_att1_t1")] <- 
+  scale(rmc[rmc$treatment == 1 & rmc$tolerance_vaw_any_bl == 1, bl_covariates_att1], center = TRUE, scale = FALSE)
+
+rmc[rmc$treatment == 1 & rmc$tolerance_vaw_any_bl == 0, paste0(bl_covariates_att0, "_c_att0_t1")] <- 
+  scale(rmc[rmc$treatment == 1 & rmc$tolerance_vaw_any_bl == 0, bl_covariates_att0], center = TRUE, scale = FALSE)
+
 
 bl_covariates_raw <- bl_covariates
 bl_covariates_s0 <- paste0(bl_covariates, "_c_s0")
@@ -393,6 +425,8 @@ bl_covariates_edu1 <- paste0(bl_covariates_edu1, "_c_edu1")
 bl_covariates_edu0 <- paste0(bl_covariates_edu0, "_c_edu0")
 bl_covariates_alc1 <- paste0(bl_covariates_alc1, "_c_alc1")
 bl_covariates_alc0 <- paste0(bl_covariates_alc0, "_c_alc0")
+bl_covariates_att1 <- paste0(bl_covariates_att1, "_c_att1")
+bl_covariates_att0 <- paste0(bl_covariates_att0, "_c_att0")
 
 bl_covariates <- paste0(bl_covariates, "_c")
 
@@ -427,13 +461,17 @@ bl_covariates_edu1 <-
 bl_covariates_edu0 <- 
   bl_covariates_edu0[!str_detect(bl_covariates_edu0, "(strata_new)|(batch)|(group)")]
 
-
 bl_covariates_alc1 <- 
   bl_covariates_alc1[!str_detect(bl_covariates_alc1, "(strata_new)|(batch)|(group)")]
 
 bl_covariates_alc0 <- 
   bl_covariates_alc0[!str_detect(bl_covariates_alc0, "(strata_new)|(batch)|(group)")]
 
+bl_covariates_att1 <- 
+  bl_covariates_att1[!str_detect(bl_covariates_att1, "(strata_new)|(batch)|(group)")]
+
+bl_covariates_att0 <- 
+  bl_covariates_att0[!str_detect(bl_covariates_att0, "(strata_new)|(batch)|(group)")]
 
 # additional stuff that can't be included
 bl_covariates <-
@@ -555,6 +593,27 @@ bl_covariates_alc0 <-
                                                 "ipv12_w_bl_2_c_alc0",
                                                 "ipv12_w_bl_3_c_alc0",
                                                 'ipv12_w_bl_4_c_alc0')]
+
+bl_covariates_att1 <-
+  bl_covariates_att1[!bl_covariates_att1 %in% c("ipv11_w_bl_1_c_att1",
+                                                "ipv11_w_bl_2_c_att1",
+                                                "ipv11_w_bl_3_c_att1",
+                                                'ipv11_w_bl_4_c_att1',
+                                                "ipv12_w_bl_1_c_att1",
+                                                "ipv12_w_bl_2_c_att1",
+                                                "ipv12_w_bl_3_c_att1",
+                                                'ipv12_w_bl_4_c_att1')]
+
+bl_covariates_att0 <-
+  bl_covariates_att0[!bl_covariates_att0 %in% c("ipv11_w_bl_1_c_att0",
+                                                "ipv11_w_bl_2_c_att0",
+                                                "ipv11_w_bl_3_c_att0",
+                                                'ipv11_w_bl_4_c_att0',
+                                                "ipv12_w_bl_1_c_att0",
+                                                "ipv12_w_bl_2_c_att0",
+                                                "ipv12_w_bl_3_c_att0",
+                                                'ipv12_w_bl_4_c_att0')]
+
 violence_items <- paste0("ipv", 1:15, "_w")
 
 control_items <- 

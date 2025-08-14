@@ -412,7 +412,8 @@ mods <- c(
                          paste0("strata_new_", 2:4, "_c")),
           response = x
         ),
-        data = subset(rmc, id_status_w == 1)
+        data = subset(rmc, id_status_w == 1),
+        clusters = rmc$A[rmc$id_status_w == 1]
       )
     }
   ),
@@ -427,7 +428,9 @@ mods <- c(
                          paste0("strata_new_", 2:4, "_c")),
           response = x
         ),
-        data = subset(rmc, id_status_w == 1 & I(tolerance_vaw_index_bl < median(tolerance_vaw_index_bl)))
+        data = subset(rmc, id_status_w == 1 & I(tolerance_vaw_index_bl < median(tolerance_vaw_index_bl))),
+        clusters = rmc$A[rmc$id_status_w == 1 & I(rmc$tolerance_vaw_index_bl < median(rmc$tolerance_vaw_index_bl))]
+        
       )
     }
   ),
@@ -442,7 +445,9 @@ mods <- c(
                          paste0("strata_new_", 2:4, "_c")),
           response = x
         ),
-        data = subset(rmc, id_status_w == 1 & I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl)))
+        data = subset(rmc, id_status_w == 1 & I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl))),
+        clusters = rmc$A[rmc$id_status_w == 1 & I(rmc$tolerance_vaw_index_bl >= median(rmc$tolerance_vaw_index_bl))]
+        
       )
     }
   ),
@@ -703,7 +708,7 @@ rows <- tibble(
 
 rows <- as_tibble(t(rows))
 rows <- add_column(rows, c("Sample", "Fixed Effects", "Control Mean"), .before = 1)
-attr(rows, 'position') <- c(4, 5, 6)
+attr(rows, 'position') <- c(5, 6, 7)
 
 gm <- tribble(
   ~raw,        ~clean,      ~fmt,
@@ -769,17 +774,18 @@ ms |> save_kable(
 mods <- 
   c(
     # lapply(
-    #   c("remained_in_chat", "msg_g", "msg_comm_emo_reg_g", "msg_other_g"),
+    #   c("msg_exp_g", "msg_comm_emo_reg_exp_g", "msg_other_exp_g"),
     #   function(x) {
     #     lm_robust(
     #       formula = reformulate(
-    #         termlabels = c("rmc_att_index_prop_std", 
+    #         termlabels = c("rmc_att_index_prop_std",
     #                        "I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl))",
     #                        "rmc_att_index_prop_std:I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl))",
     #                        paste0("batch_", 2:5, "_c")),
     #         response = x
     #       ),
-    #       data = subset(rmc, treatment == 1)
+    #       data = subset(rmc, treatment == 1),
+    #       clusters = rmc$group[rmc$treatment == 1]
     #     )
     #   }
     # ),
@@ -810,7 +816,7 @@ mods <-
       }
     ),
     lapply(
-      c("remained_in_chat", "days_in_chat"),
+      c("remained_in_chat", "days_in_chat", "msg_g_v", "msg_comm_emo_reg_g_v"),
       function(x) {
         lm_robust(
           formula = reformulate(
@@ -818,7 +824,8 @@ mods <-
                            paste0("batch_", 2:5, "_c")),
             response = x
           ),
-          data = subset(rmc, treatment == 1 & I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl)))
+          data = subset(rmc, treatment == 1 & I(tolerance_vaw_index_bl >= median(tolerance_vaw_index_bl))),
+          clusters = rmc$group[rmc$treatment == 1 & I(rmc$tolerance_vaw_index_bl >= median(rmc$tolerance_vaw_index_bl))]
         )
       }
     )
