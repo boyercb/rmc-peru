@@ -75,7 +75,7 @@ dir.create("__data/RMC", recursive = TRUE, showWarnings = FALSE)
   - `4_select_stratified.R` - Select covariates for stratified analysis
   - `5_combine_selections.R` - Combine covariate selections
 - `3_itt/` - Intent-to-treat analysis
-  - `0_draw_randomizations.R` - Generate randomization inference
+  - `0_draw_randomizations.R` - Generate permutted assignments for randomization inference
   - `1_prereg_outcomes.R` - Pre-registered primary outcomes
   - `2_prereg_subgroups.R` - Pre-registered subgroup analyses
   - `3_peer_effects.R` - Peer effects analysis
@@ -100,7 +100,7 @@ To reproduce all results from the study, run the master script in R from the pro
 source("__master_run.R")
 ```
 
-**Note:** The complete analysis pipeline processes survey data, performs multiple imputation, conducts covariate selection using LASSO, and runs the full statistical analysis. This may take several hours to complete depending on your system and the size of the dataset.
+**Note:** Requires the raw data (not included). The complete analysis pipeline processes survey data, performs multiple imputation, conducts covariate selection using LASSO, and runs the full statistical analysis. This may take several hours to complete depending on your system and the size of the dataset.
 
 ### Running individual components
 
@@ -126,7 +126,7 @@ source("3_itt/2_prereg_subgroups.R") # Subgroup analyses
 
 The analysis includes several configuration options that can be set at the top of `__master_run.R`:
 
-- `impute <- FALSE` - Set to `TRUE` to perform multiple imputation of missing data
+- `impute <- FALSE` - Set to `TRUE` to perform multiple imputation of missing data (not performed in final analysis).
 
 ## Analysis Components
 
